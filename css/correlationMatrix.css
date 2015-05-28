@@ -1,0 +1,33 @@
+rect.bordered {
+  stroke: #E6E6E6;
+  stroke-width:1px; 
+  z-index: 1;  
+}
+rect.selected {
+  stroke: black;
+  stroke-width:1px;
+  z-index: 200;
+}
+
+text.mono {
+  font-size: 5pt;
+  font-family: sans-serif;
+  fill: black;
+}
+
+.dot {
+    opacity: .7;
+    cursor: pointer;
+}
+
+.axisc line,
+.axisc path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axisc text {
+  /*text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;*/
+  font: 5px sans-serif;
+}

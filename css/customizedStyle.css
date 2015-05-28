@@ -1,0 +1,74 @@
+/*Load this file after loading all the css files to override the pre-defined styles*/
+
+/*bootstrap*/
+.col-xs-2.col-xs-3.col-xs-4,.col-lg-6,.col-lg-8,.col-lg-12{
+	padding-right: 5px;
+	padding-left: 5px;
+}
+
+.panel{
+	margin-bottom: 10px;
+}
+
+.panel-body {
+  padding: 1px;
+}
+
+.panel-heading {
+  padding: 5px 5px;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+}
+
+.panel-footer {
+  padding: 5px 5px;
+}
+
+/*start-bootstrap template*/
+.sidebar {
+  z-index: 1;
+  position: absolute;
+  width: 200px;
+  margin-top: 0px;
+}
+
+@media(min-width:768px) {
+    #page-wrapper {
+        margin: 0 0 0 200px;
+    }
+}
+.sidebar .sidebar-search {
+  padding: 3px;
+}
+p{
+  margin-bottom: 1px
+}
+
+/*sticky sidebar*/
+@media (min-width: 979px) {
+  #side-menu.affix-top {
+    position: static;
+    margin-top:20px;
+    width:200px;
+  }
+  
+  #side-menu.affix {
+    position: fixed;
+    top:20px;
+    width:200px;
+  }
+}
+
+/* show the move cursor as the user moves the mouse over the panel header.*/
+#panels .panel-heading {
+    cursor: move;
+}
+
+.vcenter {
+  display:  inline-block;
+  vertical-align: middle;
+  text-align: center;
+  float: none;
+}

@@ -1,0 +1,41 @@
+.axis path,.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.brush .extent {
+  stroke: #fff;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
+
+.axis text.label {
+  font-weight: bold;
+  font: 12px sans-serif;
+}
+
+.detailsline {
+  fill: none;
+  stroke: url(#detail-gradient);
+  stroke-width: 1.5px;
+  clip-path: url(#clip);
+}
+
+.contextline{
+  fill: none;
+  stroke-width: 10px;
+  stroke: url(#line-gradient);
+  clip-path: url(#clip);
+}
+
+.legendLine {
+  fill: none;
+  stroke: url(#legend-gradient);
+  stroke-width: 5px;
+}
+
+.legend text.label {
+  font-weight: bold;
+  font: 12px sans-serif;
+}

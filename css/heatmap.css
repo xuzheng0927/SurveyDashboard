@@ -1,0 +1,16 @@
+
+svg {
+  font: 10px sans-serif;
+  padding: 8px;
+}
+
+rect.bordered {
+  stroke: #E6E6E6;
+  stroke-width:2px;   
+}
+
+text.axis-worktime {
+	font-size: 9pt;
+  	font-family: sans-serif;
+  	fill: #000;
+}
