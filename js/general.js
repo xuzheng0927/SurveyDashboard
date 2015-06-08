@@ -4,11 +4,26 @@ function equalArrays(array1, array2) {
 	}
 	else {
 		var isEqual = true;
-		for (var i = 0; i < array1.length; i++){
-			if (array1[i] != array2[i]) {
-				isEqual = false;
+		for (var i1 = 0; i1 < array1.length; i1++){
+			isEqual = false;
+			for (var i2 = 0; i2 < array2.length; i2++){
+				if (array1[i1] == array2[i2]) {
+					isEqual = true;
+				}
 			}
+			/*if (array1[i] != array2[i]) {
+				isEqual = false;
+			}*/
 		}
+
+		/*for (var i2 = 0; i2 < array2.length; i2++){
+			isEqual = false;
+			for (var i1 = 0; i1 < array1.length; i1++){
+				if (array1[i1] == array2[i2]) {
+					isEqual = true;
+				}
+			}
+		}*/
 		return isEqual;
 	}
 }

@@ -56,7 +56,7 @@ d3.json("../data/SurveyData.json",function(error,json){
     }
     //console.log(surveyDataIndex);
     //console.log(surveyDataTable);
-    console.log(surveyResponseAnswer);
+    //console.log(surveyResponseAnswer);
     addNewPanel();
 });
 
