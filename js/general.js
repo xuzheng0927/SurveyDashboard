@@ -28,10 +28,20 @@ function equalArrays(array1, array2) {
 	}
 }
 
-function disableOptionWithValue(selectDOM,opt_val){
-	for (i = 0; i < selectDOM.children().length; i++){
-		if (selectDOM.children()[i].value == opt_val) {
-			selectDOM.children().children()[i].setAttribute("disabled","disabled")
+function containedInArray(element, arr){
+	var contained = false;
+	for (var i=0; i<arr.length; i++) {
+		if (arr[i] == element) contained = true;
+	}
+	return contained;
+}
+
+function removeElement(element, arr){
+	var newArray = new Array();
+	if (arr != null) {
+		for (var i=0; i<arr.length; i++){
+			if (arr[i] != element) newArray[newArray.length]=arr[i];
 		}
 	}
+	return newArray;
 }
