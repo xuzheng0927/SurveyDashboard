@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../css/parallelCoordinates.css">
     <link rel="stylesheet" type="text/css" href="../css/correlationMatrix.css">
     <link rel="stylesheet" type="text/css" href="../css/timelines.css">
-    <!-- <link rel="stylesheet" href="../bower_components/jquery-ui/jquery-ui.css"> -->
+    <link rel="stylesheet" href="../bower_components/jquery-ui/jquery-ui.css">
 
     <!--Date Picker Dependencies-->
     <link rel="stylesheet" href="../bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" />
@@ -85,9 +85,9 @@
 
         <div style="padding:20px">
         <div class="row" style="padding:5">
-            <div class="col-lg-12" style="margin-bottom:5px">
+            <div class="col-lg-12" style="margin-bottom:5px;padding-left:15px">
                 <p>  </p>
-                <button href="#BOTTOM" type="button" class="btn btn-primary btn-block" id="btnAdd">
+                <button href="#BOTTOM" type="button" class="btn btn-primary" id="btnAdd" style="margin-left:5px">
                     <i class="glyphicon glyphicon-plus"></i>
                     Add a New Chart
                 </button>
@@ -99,7 +99,7 @@
             <!-- primary panel row -->
         </div>
         
-        <div class="row sortable" id="panels">
+        <div class="col-lg-12 sortable" id="panels">
             <!-- other default panels -->
             
         </div>
@@ -121,7 +121,9 @@
     <!-- Metis Menu Plugin JavaScript -->
     <script src="../bower_components/metisMenu/dist/metisMenu.min.js"></script>
 
-    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js"></script> -->
+    <script src="../bower_components/d3.js"></script>
+    <script src="../bower_components/d3.layout.cloud.js"></script>
 
     <!-- Custom Theme JavaScript -->
     <script src="../dist/js/sb-admin-2.js"></script>
@@ -141,9 +143,12 @@
     <script type="text/javascript" src="../js/parallelCoordinates.js"></script>
     <script type="text/javascript" src="../js/correlationMatrix.js"></script>
     <script type="text/javascript" src="../js/timelines.js"></script>
+    <script type="text/javascript" src="../js/barchart.js"></script>
+    <script type="text/javascript" src="../js/wordcloud.js"></script>
 
     <!-- Framework code -->
-    <script type="text/javascript" src="../js/panels1.js"></script>
+    <script type="text/javascript" src="../js/panelsDOM3.js"></script>
+    <script type="text/javascript" src="../js/panels4.js"></script>
     <script type="text/javascript" src="../js/settings.js"></script>
     <script type="text/javascript" src="../js/processData.js"></script>
     <script type="text/javascript" src="../js/main.js"></script>
