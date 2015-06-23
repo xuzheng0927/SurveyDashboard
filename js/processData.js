@@ -13,7 +13,7 @@ function getResponseAnswer(json) {
 		if (json[1][q] == "Open-Ended Response"){
 			responseAnswerList[q] = null;
 		}
-		else {
+		else if (json[1][q] == "Response") {
 			responseAnswerList[q] = new Array();
 			answerCount = 0;
 			for (var i = 2; i < json.length; i++) {
@@ -51,6 +51,20 @@ function getResponseAnswer(json) {
 					break;
 				}
 			}*/
+		}
+		else { // Numeric attributes
+			responseAnswerList[q] = new Array();
+			var binNum = 5;
+			var fullArray = new Array();
+			for (var i=2; i < json.length; i++) {
+				fullArray[i-2] = json[i][q];
+			}
+			var maxInArray = Math.max.apply(null,fullArray);
+			var minInArray = Math.min.apply(null,fullArray);
+			//var binValues = new Array();
+			for (var i=0; i < binNum; i++) {
+				responseAnswerList[q][i] = minInArray + (maxInArray - minInArray) / binNum * (i+1);
+			}
 		}
 	}
 	return responseAnswerList;

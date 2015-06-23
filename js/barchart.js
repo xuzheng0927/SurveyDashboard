@@ -1,14 +1,17 @@
-function createBarChart(pID, qID, sID) {
-	var currentResponseList = surveyResponseAnswer[sID]["Q"+qID];
+function createBarChart(pID, qID, sID, RespType) {
+	//var currentResponseList = surveyResponseAnswer[sID]["Q"+qID];
+	//console.log(sID+" "+qID);
+	var currentResponseList = surveyResponseAnswer[sID][qID];
 	var barHeight = Math.floor(100/currentResponseList.length);
 	var currentContainer = $("#panel"+pID+"-sm"+qID).find(".chart-container");
-	var currentRespHistogram = getHistogramData(currentResponseList, qID, sID);
+	var currentRespHistogram = getHistogramData(currentResponseList, qID, sID, RespType);
+	if (RespType == "Numeric") currentResponseList = transformRespList(currentResponseList);
 	var newResponseBar;
 	var newRespBarWidth;
 	var newRespBarHeight;
 	var newSVGHeight;
 	var newSVGWidth;
-	//console.log(currentResponseList);
+	//console.log(currentContainer);
 
 	for (var i=0; i < currentResponseList.length; i++) {
 		//newResponseBar = $('<div style="padding:2px; width:100%; height:'+barHeight+'%;"><svg style="margin:0px; height:100%; width:100% padding:0px"></svg></div>');
@@ -48,6 +51,7 @@ function createBarChart(pID, qID, sID) {
 		.attr("width",newSVGWidth*currentRespHistogram[i]/Math.max.apply(null,currentRespHistogram)*0.65)
 		.attr("height", newSVGHeight*0.70)
 		.attr("fill", "#888888")
+		.attr("stroke","black")
 		.append("title").text(currentRespHistogram[i]+" response(s)");
 
 		newResponseBar.find("svg").attr("max",Math.max.apply(null,currentRespHistogram));
@@ -67,17 +71,49 @@ function createBarChart(pID, qID, sID) {
 	})*/
 };
 
-function getHistogramData(responseList, qID, sID) {
-	var histogramData = new Array;
-	for (var i=0; i < responseList.length; i++) {
-		histogramData[i] = 0;
-		for (var j=2; j < surveyDataTable[sID].length; j++) {
-			if (surveyDataTable[sID][j]["Q"+qID] == responseList[i]) {
-				histogramData[i] += 1;
+function getHistogramData(responseList, qID, sID, RespType) {
+	var histogramData = new Array();
+	if (RespType == "Response") {
+		for (var i=0; i < responseList.length; i++) {
+			histogramData[i] = 0;
+			for (var j=2; j < surveyDataTable[sID].length; j++) {
+				if (surveyDataTable[sID][j][qID] == responseList[i]) {
+					histogramData[i] += 1;
+				}
 			}
 		}
 	}
+	else {
+		for (var i=0; i < responseList.length; i++) {
+			histogramData[i] = 0;
+			for (var j=2; j < surveyDataTable[sID].length; j++) {
+				if (i == 0) {
+					if (surveyDataTable[sID][j][qID] < responseList[0]) histogramData[i] += 1;
+				}
+				else {
+					if (surveyDataTable[sID][j][qID] >= responseList[i-1] & surveyDataTable[sID][j][qID] < responseList[i]) {
+						histogramData[i] += 1;
+					}
+				}
+			}
+		}
+		//console.log(histogramData);
+	}
 	return histogramData;
+}
+
+function transformRespList(responseList) {
+	var newList = new Array();
+	for (var i=0; i<responseList.length; i++) {
+		if ((responseList[i]+"").length > 6) {
+			responseList[i] = (responseList[i]+"").substring(0,6);
+			//responseList[i] = Math.floor(responseList[i] * 100000) / 100000;
+		}
+		if (i == 0) newList[i] = "less than "+responseList[0];
+		else if (i == responseList.length-1) newList[i] = "more than "+responseList[i-1];
+		else newList[i] = "between "+responseList[i-1]+" and "+responseList[i];
+	}
+	return newList;
 }
 
 function resizeRect(pID, qID) {

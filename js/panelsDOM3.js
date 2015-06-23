@@ -100,6 +100,8 @@ function newQuestionSelectorDOM(pID) {
     if (surveyIndex != null){
         var questionList = surveyDataTable[surveyIndex][0];
         //console.log(questionList);
+        var keyDetected = false;
+        var questionDetected = false;
 
         for (q in questionList) {
             DOMstring += '<option id = "panel'+pID+'-selector-'+q+'" value = '+q+'>'+q+':'+questionList[q]+'</option>';

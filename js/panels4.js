@@ -570,6 +570,9 @@ function updatePanelBySurveyChange(pID) {
         $(".selectpicker").selectpicker("refresh");
 
         $("#panel"+pID+"-heading").text($("#panel"+pID+"-surveyselector").text());
+
+        $("#panel"+pID+" .sm-panel").remove();
+        updateDefaultChart(pID);
         //reorderQuestions(panelID);
     }
     else {
@@ -586,17 +589,24 @@ function updatePanelBySurveyChange(pID) {
 function updateDefaultChart(pID) {
     var currentSurveyIndex = $("#panel"+pID+"-surveyselector").val();
     var currentOptions = $("#panel"+pID+"-selector").find("option");
+    var currentOptionValues = new Array();
+    var qID;
 
     for (var i=0; i<currentOptions.length;i++){
-        var qID = i+1;
-        var nextSmallMultiplePanel = newSmallMultiplePanelDOM(pID,i+1);
+        //var qID = i+1;
+        qID = currentOptions[i].value;
+        var nextSmallMultiplePanel = newSmallMultiplePanelDOM(pID,qID);
         nextSmallMultiplePanel.find(".panel-heading").text($(currentOptions[i]).text());
         nextSmallMultiplePanel.find(".panel-heading").attr("title",$(currentOptions[i]).text());
         //$("#panel"+pID+"-sm"+(i+1)+'-heading').text($(currentOptions[i]).text());
         nextSmallMultiplePanel.appendTo("#panel"+pID+"-chart-area");
-        if (surveyResponseAnswer[currentSurveyIndex][currentOptions[i].value] != null) {
+        if (surveyDataTable[currentSurveyIndex][1][qID] == "Response") {
             nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
-            createBarChart(pID,qID,currentSurveyIndex);
+            createBarChart(pID,qID,currentSurveyIndex,"Response");
+        }
+        else if (surveyDataTable[currentSurveyIndex][1][qID] == "Numeric") {
+            nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
+            createBarChart(pID,qID,currentSurveyIndex,"Numeric");
         }
         else {
             createWordCloud(pID,qID,currentSurveyIndex);

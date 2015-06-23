@@ -11,8 +11,8 @@ function createWordCloud (pID, qID, sID) {
 	var allText = "";
 
 	for (var i=2; i<currentSurveyData.length; i++) {
-		if (currentSurveyData[i]["Q"+qID].length > 0) {
-			allText += currentSurveyData[i]["Q"+qID]
+		if (currentSurveyData[i][qID].length > 0) {
+			allText += currentSurveyData[i][qID]
 			allText += " ";
 		}
 	}
