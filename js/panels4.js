@@ -703,7 +703,7 @@ function showAllResponses(pID,qID) {
 
     var newText;
     for (var i=2; i<currentResponseNum;i++){
-        newText = surveyDataTable[currentSurveyIndex][i]['Q'+qID];
+        newText = surveyDataTable[currentSurveyIndex][i][qID];
         if (newText.length > 0){
             nextAllResponses.find(".resp-text").append("<p>"+newText+"</p>");
             nextAllResponses.find(".resp-text").append("<br>");
