@@ -60,73 +60,74 @@ function addNewPanel() {
     //console.log(parseInt(nextColumn.css("width")));
     //console.log(parseInt(nextColumn.css("height")));
 
-    nextColumn.find(".sm-panel").resizable( {
-        containment: "parent",
-        //revert: true,
-        //aspectRatio: function() { return parseInt($(this).css("width")) / parseInt($(this).css("height"))},
-        //aspectRatio: 1,
-        alsoResize: $(this).find('.panel'),
-        //helper: "ui-resizable-helper",
-        //alsoResize: $(this).parent(),
-        //resize: function(event, ui) {$(this).find("svg").css("top","-67px");}
-        start: function(event, ui) {
-            $(this).find(".ui-resizable-se").css("bottom","1px");
-            //$(this).css("position","fix");
-            //console.log($(this).position());
-            //$(this).css("left",-$(this).position().left);
-            //$(this).css("top",-$(this).position().top);
-            $(this).attr("keepleft",parseInt($(this).css("left")));
-            $(this).attr("keeptop",parseInt($(this).css("top")));
-            //$(this).css("top",0);
-            //$(this).css("position","fix");
-            // console.log("start position:"+$(this).position().left+","+$(this).position().top);
-            // console.log("start offset:"+$(this).offset().left+","+$(this).offset.top);
-            // console.log("start css:"+$(this).css("left")+","+$(this).css("top"));
-            setActivePanel($(this));
-            //$(this).find(".ui-resizable-s").css("bottom","-3px");
-            //$(this).find(".ui-resizable-e").show();
-        },
-        resize: function(event, ui) {    
-            $(this).css("position","fixed");
-            $(this).css("left",$(this).attr("keepleft")+"px");
-            $(this).css("top",$(this).attr("keeptop")+"px");
-            $(this).css("position","relative");
-            // console.log("resize position:"+$(this).position().left+","+$(this).position().top);
-            // console.log("resize offset:"+$(this).offset().left+","+$(this).offset.top);
-            // console.log("resize css:"+$(this).css("left")+","+$(this).css("top")); 
-            $(this).find(".chart-container").css("height","100%");
-            //$(this).find(".chart-container").css("width","100%");
-            oldSVGH = parseInt($(this).find(".chart-container").css("height"));
-            $(this).find(".chart-container").css("height",(oldSVGH-67)+"px");
-            if ($(this).find(".sm-panel-more").css("visibility") == "hidden") {
-                resizeRect($(this).attr("pID"),$(this).attr("qID"));
-            }
-            else {
-                resizeCloud($(this).attr("pID"),$(this).attr("qID"));
-            }
-        },
-        stop: function(event, ui) {
-            //resizeRect($(this).attr("pID"),$(this).attr("qID"),ui.originalSize,ui.size);
-            $(this).css("position","relative");
-            // console.log("stop position:"+$(this).position().left+","+$(this).position().top);
-            // console.log("stop offset:"+$(this).offset().left+","+$(this).offset.top);
-            // console.log("stop css:"+$(this).css("left")+","+$(this).css("top"));   
-            //$(this).css("left","0");
-            //$(this).css("top","0");
-        }
-    });
+    // nextColumn.find(".sm-panel").resizable( {
+    //     containment: "parent",
+    //     //revert: true,
+    //     //aspectRatio: function() { return parseInt($(this).css("width")) / parseInt($(this).css("height"))},
+    //     //aspectRatio: 1,
+    //     alsoResize: $(this).find('.panel'),
+    //     //helper: "ui-resizable-helper",
+    //     //alsoResize: $(this).parent(),
+    //     //resize: function(event, ui) {$(this).find("svg").css("top","-67px");}
+    //     start: function(event, ui) {
+    //         $(this).find(".ui-resizable-se").css("bottom","1px");
+    //         //$(this).css("position","fix");
+    //         //console.log($(this).position());
+    //         //$(this).css("left",-$(this).position().left);
+    //         //$(this).css("top",-$(this).position().top);
+    //         $(this).attr("keepleft",parseInt($(this).css("left")));
+    //         $(this).attr("keeptop",parseInt($(this).css("top")));
+    //         //$(this).css("top",0);
+    //         //$(this).css("position","fix");
+    //         // console.log("start position:"+$(this).position().left+","+$(this).position().top);
+    //         // console.log("start offset:"+$(this).offset().left+","+$(this).offset.top);
+    //         // console.log("start css:"+$(this).css("left")+","+$(this).css("top"));
+    //         setActivePanel($(this));
+    //         //$(this).find(".ui-resizable-s").css("bottom","-3px");
+    //         //$(this).find(".ui-resizable-e").show();
+    //     },
+    //     resize: function(event, ui) {    
+    //         $(this).css("position","fixed");
+    //         $(this).css("left",$(this).attr("keepleft")+"px");
+    //         $(this).css("top",$(this).attr("keeptop")+"px");
+    //         $(this).css("position","relative");
+    //         // console.log("resize position:"+$(this).position().left+","+$(this).position().top);
+    //         // console.log("resize offset:"+$(this).offset().left+","+$(this).offset.top);
+    //         // console.log("resize css:"+$(this).css("left")+","+$(this).css("top")); 
+    //         $(this).find(".chart-container").css("height","100%");
+    //         //$(this).find(".chart-container").css("width","100%");
+    //         oldSVGH = parseInt($(this).find(".chart-container").css("height"));
+    //         $(this).find(".chart-container").css("height",(oldSVGH-67)+"px");
+    //         if ($(this).find(".sm-panel-more").css("visibility") == "hidden") {
+    //             resizeRect($(this).attr("pID"),$(this).attr("qID"));
+    //         }
+    //         else {
+    //             resizeCloud($(this).attr("pID"),$(this).attr("qID"));
+    //         }
+    //     },
+    //     stop: function(event, ui) {
+    //         //resizeRect($(this).attr("pID"),$(this).attr("qID"),ui.originalSize,ui.size);
+    //         $(this).css("position","relative");
+    //         // console.log("stop position:"+$(this).position().left+","+$(this).position().top);
+    //         // console.log("stop offset:"+$(this).offset().left+","+$(this).offset.top);
+    //         // console.log("stop css:"+$(this).css("left")+","+$(this).css("top"));   
+    //         //$(this).css("left","0");
+    //         //$(this).css("top","0");
+    //     }
+    // });
     //nextColumn.find(".sm-panel .ui-resizable-e").css("right","12px");
-    nextColumn.find(".sm-panel .ui-resizable-e").hide();
+    //nextColumn.find(".sm-panel .ui-resizable-e").hide();
     //nextColumn.find(".sm-panel .ui-resizable-s").css("bottom","7px");
-    nextColumn.find(".sm-panel .ui-resizable-s").hide();
-    nextColumn.find(".sm-panel .ui-resizable-se").css("right","14px");
-    nextColumn.find(".sm-panel .ui-resizable-se").css("bottom","11px");
+    //nextColumn.find(".sm-panel .ui-resizable-s").hide();
+    //nextColumn.find(".sm-panel .ui-resizable-se").css("right","14px");
+    //nextColumn.find(".sm-panel .ui-resizable-se").css("bottom","11px");
     setActivePanel(nextColumn);
     //var defaultSVGH = parseInt(nextColumn.find("svg").css("height"));
     //nextColumn.find("svg").css("height",(defaultSVGH+67)+"px");
     //nextColumn.find("svg").css("height","100%");
     //nextColumn.find("svg").css("top","-67px");
-
+    nextChartArea.attr("keeptop",nextChartArea.position().top);
+    nextChartArea.attr("keepleft",nextChartArea.position().left);
     nextColumn.resizable({
         //aspectRatio: parseInt(nextColumn.css("width")) / parseInt(nextColumn.css("height")),
         //stop: function(event, ui) {console.log($(this));},
@@ -136,8 +137,8 @@ function addNewPanel() {
         alsoResize: nextPanel,
         start: function(event,ui) {
             $(this).attr("resized",true);
-            $(this).attr("keepleft",parseInt($(this).css("left")));
-            $(this).attr("keeptop",parseInt($(this).css("top")));
+            $(this).attr("keepleft",parseInt($(this).position.left));
+            $(this).attr("keeptop",parseInt($(this).position.top));
         },
         resize: function(event, ui) {
             $(this).css("position","fixed");
@@ -151,6 +152,9 @@ function addNewPanel() {
                 }
                 else resizeCloud($(allSMPanels[i]).attr("pID"),$(allSMPanels[i]).attr("qID"));
             }
+        },
+        stop: function(event, ui) {
+            $(this).find(".chart-area").css("height",parseInt($(this).css("height"))-$(this).find(".chart-area").attr("keeptop"));
         }
     });
     nextColumn.draggable({
@@ -574,6 +578,58 @@ function updatePanelBySurveyChange(pID) {
         $("#panel"+pID+" .sm-panel").remove();
         updateDefaultChart(pID);
         //reorderQuestions(panelID);
+
+        $("#panel"+pID).find(".sm-panel").resizable( {
+            containment: "parent",
+            //revert: true,
+            //aspectRatio: function() { return parseInt($(this).css("width")) / parseInt($(this).css("height"))},
+            //aspectRatio: 1,
+            alsoResize: $(this).find('.panel'),
+            //helper: "ui-resizable-helper",
+            //alsoResize: $(this).parent(),
+            //resize: function(event, ui) {$(this).find("svg").css("top","-67px");}
+            start: function(event, ui) {
+                $(this).find(".ui-resizable-se").css("bottom","1px");
+                $(this).attr("keepleft",parseInt($(this).position().left));
+                $(this).attr("keeptop",parseInt($(this).position().top));
+                setActivePanel($(this));
+            },
+            resize: function(event, ui) {    
+                $(this).css("position","fixed");
+                //$(this).css("left",$(this).attr("keepleft")+"px");
+                //$(this).css("top",$(this).attr("keeptop")+"px");
+                $(this).css("position","relative");
+                // console.log("resize position:"+$(this).position().left+","+$(this).position().top);
+                // console.log("resize offset:"+$(this).offset().left+","+$(this).offset.top);
+                // console.log("resize css:"+$(this).css("left")+","+$(this).css("top")); 
+                $(this).find(".chart-container").css("height","100%");
+                //$(this).find(".chart-container").css("width","100%");
+                oldSVGH = parseInt($(this).find(".chart-container").css("height"));
+                $(this).find(".chart-container").css("height",(oldSVGH-67)+"px");
+                if ($(this).find(".sm-panel-more").css("visibility") == "hidden") {
+                    resizeRect($(this).attr("pID"),$(this).attr("qID"));
+                }
+                else {
+                    resizeCloud($(this).attr("pID"),$(this).attr("qID"));
+                }
+            },
+            stop: function(event, ui) {
+                //resizeRect($(this).attr("pID"),$(this).attr("qID"),ui.originalSize,ui.size);
+                $(this).css("position","relative");
+                $("#col"+$(this).attr("pID")).css("height",parseInt($(this).parent().attr("height"))+$(this).attr("keeptop"));
+                $("#panel"+$(this).attr("pID")).css("height",parseInt($(this).parent().attr("height"))+$(this).attr("keeptop"));
+                // console.log("stop position:"+$(this).position().left+","+$(this).position().top);
+                // console.log("stop offset:"+$(this).offset().left+","+$(this).offset.top);
+                // console.log("stop css:"+$(this).css("left")+","+$(this).css("top"));   
+                //$(this).css("left","0");
+                //$(this).css("top","0");
+            }
+        });
+        $("#panel"+pID).find(".sm-panel .ui-resizable-e").hide();
+        //nextColumn.find(".sm-panel .ui-resizable-s").css("bottom","7px");
+        $("#panel"+pID).find(".sm-panel .ui-resizable-s").hide();
+        $("#panel"+pID).find(".sm-panel .ui-resizable-se").css("right","14px");
+        $("#panel"+pID).find(".sm-panel .ui-resizable-se").css("bottom","11px");
     }
     else {
         //$("#panel"+panelID+"-addbtn").hide();

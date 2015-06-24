@@ -51,7 +51,7 @@ function createBarChart(pID, qID, sID, RespType) {
 		//.attr("x",0)
 		//.attr("y",newSVGHeight*0.1)
 		.attr("width",newSVGWidth*currentRespHistogram[i]/Math.max.apply(null,currentRespHistogram)*0.65)
-		.attr("height", newSVGHeight*0.70 < containerHeight/4 ? newSVGHeight*0.70 : containerHeight/4)
+		.attr("height", newSVGHeight*0.70 < containerHeight/5 ? newSVGHeight*0.70 : containerHeight/5)
 		.attr("y",function(d){
 			return (newSVGHeight - $(this).attr("height")) / 2;
 		})
@@ -144,7 +144,8 @@ function resizeRect(pID, qID) {
 
 	d3.select($("#panel"+pID+"-sm"+qID)[0]).selectAll("text")
 		.transition()
-		.attr("x",newSVGWidth*0.29)
+		//.attr("x",newSVGWidth*0.29)
+		.attr("x",newSVGWidth*0.02)
 		.attr("y",newSVGHeight*0.5)
 		//.attr("cursor","pointer")
 		//.attr("text-anchor","end")
