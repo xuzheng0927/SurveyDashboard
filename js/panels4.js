@@ -55,7 +55,7 @@ function addNewPanel() {
     
     //$(".panel-container").resizable();
     updatePanelBySurveyChange(focusID);
-    updateDefaultChart(focusID);
+    //updateDefaultChart(focusID);
 
     //console.log(parseInt(nextColumn.css("width")));
     //console.log(parseInt(nextColumn.css("height")));
@@ -558,7 +558,7 @@ function updatePanelBySurveyChange(pID) {
         //$("#panel"+panelID+"-chart-select").show();
         $("#panel"+pID+"-chart-area").show();
 
-        $("#panel"+pID+" .question-selector").remove();
+        $("#panel"+pID+" .question-selector").parent().remove();
         var nextQuestionSelector = newQuestionSelectorDOM(pID);
         nextQuestionSelector.appendTo("#panel"+pID+"-question-area");
         var nextOptions = nextQuestionSelector.find("option");

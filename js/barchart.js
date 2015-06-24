@@ -4,6 +4,7 @@ function createBarChart(pID, qID, sID, RespType) {
 	var currentResponseList = surveyResponseAnswer[sID][qID];
 	var barHeight = Math.floor(100/currentResponseList.length);
 	var currentContainer = $("#panel"+pID+"-sm"+qID).find(".chart-container");
+	var containerHeight = parseInt(currentContainer.css("height"));
 	var currentRespHistogram = getHistogramData(currentResponseList, qID, sID, RespType);
 	if (RespType == "Numeric") currentResponseList = transformRespList(currentResponseList);
 	var newResponseBar;
@@ -22,8 +23,8 @@ function createBarChart(pID, qID, sID, RespType) {
 		//newResponseBar.attr("title",currentRespHistogram[i]);
 		newResponseBar.appendTo(currentContainer);
 		newResponseBar.css("cursor","move");
-		newRespBarWidth = parseInt(newResponseBar.css("width"));
-		newRespBarHeight = parseInt(newResponseBar.css("height"));
+		//newRespBarWidth = parseInt(newResponseBar.css("width"));
+		//newRespBarHeight = parseInt(newResponseBar.css("height"));
 		newSVGHeight = parseInt(newResponseBar.find("svg").css("height"));
 		newSVGWidth = parseInt(newResponseBar.find("svg").css("width"));
 		//newResponseBar.find("svg").attr("viewbox","0,0,"+newSVGWidth+","+newSVGHeight);
@@ -33,10 +34,11 @@ function createBarChart(pID, qID, sID, RespType) {
 		.data([currentResponseList[i]])
 		.enter()
 		.append("text")
-		.attr("x",newSVGWidth*0.29)
+		//.attr("text-anchor","end")
+		//.attr("x",newSVGWidth*0.29)
+		.attr("x",newSVGWidth*0.02)
 		.attr("y",newSVGHeight*0.5)
 		//.attr("cursor","pointer")
-		.attr("text-anchor","end")
 		.attr("font-size",newSVGWidth*0.027 < newSVGHeight*0.247 ? newSVGWidth*0.027 : newSVGHeight*0.247)
 		.text(currentResponseList[i].length < 20 ? currentResponseList[i] : currentResponseList[i].substring(0,20)+"...")
 		.append("title").text(currentResponseList[i]);
@@ -47,9 +49,12 @@ function createBarChart(pID, qID, sID, RespType) {
 		.append("rect")
 		.attr("x",newSVGWidth*0.3)
 		//.attr("x",0)
-		.attr("y",newSVGHeight*0.1)
+		//.attr("y",newSVGHeight*0.1)
 		.attr("width",newSVGWidth*currentRespHistogram[i]/Math.max.apply(null,currentRespHistogram)*0.65)
-		.attr("height", newSVGHeight*0.70)
+		.attr("height", newSVGHeight*0.70 < containerHeight/4 ? newSVGHeight*0.70 : containerHeight/4)
+		.attr("y",function(d){
+			return (newSVGHeight - $(this).attr("height")) / 2;
+		})
 		.attr("fill", "#888888")
 		.attr("stroke","black")
 		.append("title").text(currentRespHistogram[i]+" response(s)");
