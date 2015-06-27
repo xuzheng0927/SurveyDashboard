@@ -137,14 +137,24 @@ function addNewPanel() {
         alsoResize: nextPanel,
         start: function(event,ui) {
             $(this).attr("resized",true);
-            $(this).attr("keepleft",parseInt($(this).position.left));
-            $(this).attr("keeptop",parseInt($(this).position.top));
+            $(this).attr("keepleft",parseInt($(this).offset().left));
+            $(this).attr("keeptop",parseInt($(this).offset().top));
+            //console.log(document.body.scrollTop)
+            // $(this).attr("origHeight",parseInt($(this).css("height")));
+            // $(this).attr("origScrTop",document.body.scrollTop);
+            // $(this).css("position","fixed");
+            // $(document.body).css("height",parseInt($(document.body).css("height")+parseInt($(this).attr("origHeight"))-parseInt($(this).css("height"))));
+            // document.body.scrollTop = $(this).attr("origScrTop");
+            // $(this).css("height",$(this).attr("origHeight"));
+            // $(this).find(".chart-panel").css("height",$(this).attr("origHeight"));
         },
         resize: function(event, ui) {
             $(this).css("position","fixed");
             $(this).css("left",$(this).attr("keepleft")+"px");
             $(this).css("top",$(this).attr("keeptop")+"px");
-            $(this).css("position","relative");
+            $(this).attr("keepleft",parseInt($(this).offset().left));
+            $(this).attr("keeptop",parseInt($(this).offset().top));
+            //$(this).css("position","relative");
             var allSMPanels = $(this).find(".sm-panel");
             for (var i=0;i<allSMPanels.length;i++){
                 if ($(allSMPanels[i]).find(".sm-panel-more").css("visibility") == "hidden") {
@@ -154,6 +164,9 @@ function addNewPanel() {
             }
         },
         stop: function(event, ui) {
+            $(this).css("position","relative");
+            $(this).css("left",-$(this).offset().left+parseInt($(this).attr("keepleft"))*2+"px");
+            $(this).css("top",-$(this).offset().top+parseInt($(this).attr("keeptop"))*2+"px");
             $(this).find(".chart-area").css("height",parseInt($(this).css("height"))-$(this).find(".chart-area").attr("keeptop"));
         }
     });
@@ -189,8 +202,8 @@ $('#panels').on('click', '.panel-close', function() {
 
 $('#panels').on('click', '.sm-panel-close', function() {
     var panelID = $(this).parent().parent().parent().attr("pID");
-    var questionID = $(this).parent().parent().parent().attr("qID");
-    var valueToRemove = 'Q'+questionID;
+    //var questionID = $(this).parent().parent().parent().attr("qID");
+    var valueToRemove = $(this).parent().parent().parent().attr("qID");
     //console.log("#panel"+panelID+"-selector-Q"+questionID);
     var newValue = removeElement(valueToRemove,$("#panel"+panelID+"-selector").val());
     $("#panel"+panelID+"-selector").val(newValue);
@@ -384,8 +397,8 @@ $('#panels').on('change','select.question-selector', function() {
     
     var allOptions = $(this).find("option");
     for (var i=0; i<allOptions.length; i++){
-        if (containedInArray(allOptions[i].value, $(this).val())) $("#panel"+panelID+"-sm"+(i+1)).show();
-        else $("#panel"+panelID+"-sm"+(i+1)).hide();
+        if (containedInArray(allOptions[i].value, $(this).val())) $("#panel"+panelID+"-sm"+allOptions[i].value).show();
+        else $("#panel"+panelID+"-sm"+allOptions[i].value).hide();
     }
 });
 
@@ -555,6 +568,14 @@ function reorderQuestions(pID){
 
 function updatePanelBySurveyChange(pID) {
     var newSurveyIndex = $("#panel"+pID+"-surveyselector").val();
+    var allSiblings = $("#col"+pID).siblings();
+    for (var i=0;i<allSiblings.length;i++){
+        $(allSiblings[i]).attr("tempofftop",parseInt($(allSiblings[i]).offset().top));
+        $(allSiblings[i]).attr("tempoffleft",parseInt($(allSiblings[i]).offset().left));
+        $(allSiblings[i]).attr("tempcsstop",parseInt($(allSiblings[i]).css("top")));
+        $(allSiblings[i]).attr("tempcssleft",parseInt($(allSiblings[i]).css("left")));
+        console.log($(allSiblings[i]).attr("tempofftop"));
+    }
 
     if (newSurveyIndex != null) {
         //$("#panel"+panelID+"-addbtn").removeAttr("disabled");
@@ -573,7 +594,7 @@ function updatePanelBySurveyChange(pID) {
         nextQuestionSelector.children().val(nextOptionValues);
         $(".selectpicker").selectpicker("refresh");
 
-        $("#panel"+pID+"-heading").text($("#panel"+pID+"-surveyselector").text());
+        $("#panel"+pID+"-heading").text(surveyDataIndex[$("#panel"+pID+"-surveyselector").val()]);
 
         $("#panel"+pID+" .sm-panel").remove();
         updateDefaultChart(pID);
@@ -590,18 +611,21 @@ function updatePanelBySurveyChange(pID) {
             //resize: function(event, ui) {$(this).find("svg").css("top","-67px");}
             start: function(event, ui) {
                 $(this).find(".ui-resizable-se").css("bottom","1px");
-                $(this).attr("keepleft",parseInt($(this).position().left));
-                $(this).attr("keeptop",parseInt($(this).position().top));
-                setActivePanel($(this));
+                $(this).attr("keepleft",parseInt($(this).offset().left));
+                $(this).attr("keeptop",parseInt($(this).offset().top));
+                console.log($(this).attr("true"));
+                //setActivePanel($(this));
             },
-            resize: function(event, ui) {    
-                $(this).css("position","fixed");
-                //$(this).css("left",$(this).attr("keepleft")+"px");
-                //$(this).css("top",$(this).attr("keeptop")+"px");
-                $(this).css("position","relative");
-                // console.log("resize position:"+$(this).position().left+","+$(this).position().top);
-                // console.log("resize offset:"+$(this).offset().left+","+$(this).offset.top);
-                // console.log("resize css:"+$(this).css("left")+","+$(this).css("top")); 
+            resize: function(event, ui) {                   
+                setActivePanel($(this));
+                
+                if ($(this).attr("dragged")=="yes") {
+                    $(this).css("position","fixed");
+                    $(this).css("top",parseInt($(this).css("top"))+parseInt($(this).attr("keeptop"))-parseInt($(this).offset().top));
+                    $(this).css("left",parseInt($(this).css("left"))+parseInt($(this).attr("keepleft"))-parseInt($(this).offset().left));
+                }
+                
+                //console.log("keeptop:"+$(this).attr("keeptop")+" top:"+$(this).css("top")+" offset-top:"+$(this).offset().top+" csstop:"+$(this).attr("csstop"));
                 $(this).find(".chart-container").css("height","100%");
                 //$(this).find(".chart-container").css("width","100%");
                 oldSVGH = parseInt($(this).find(".chart-container").css("height"));
@@ -616,13 +640,13 @@ function updatePanelBySurveyChange(pID) {
             stop: function(event, ui) {
                 //resizeRect($(this).attr("pID"),$(this).attr("qID"),ui.originalSize,ui.size);
                 $(this).css("position","relative");
+                //console.log("keeptop:"+$(this).attr("keeptop")+" top:"+$(this).css("top")+" offset-top:"+$(this).offset().top+" csstop:"+$(this).attr("csstop"));
+                if ($(this).attr("dragged") == "yes") {
+                    $(this).css("top",parseInt($(this).css("top"))+parseInt($(this).attr("keeptop"))-$(this).offset().top);
+                    $(this).css("left",parseInt($(this).css("left"))+parseInt($(this).attr("keepleft"))-$(this).offset().left);
+                }
                 $("#col"+$(this).attr("pID")).css("height",parseInt($(this).parent().attr("height"))+$(this).attr("keeptop"));
                 $("#panel"+$(this).attr("pID")).css("height",parseInt($(this).parent().attr("height"))+$(this).attr("keeptop"));
-                // console.log("stop position:"+$(this).position().left+","+$(this).position().top);
-                // console.log("stop offset:"+$(this).offset().left+","+$(this).offset.top);
-                // console.log("stop css:"+$(this).css("left")+","+$(this).css("top"));   
-                //$(this).css("left","0");
-                //$(this).css("top","0");
             }
         });
         $("#panel"+pID).find(".sm-panel .ui-resizable-e").hide();
@@ -639,6 +663,17 @@ function updatePanelBySurveyChange(pID) {
         //$("#panel"+panelID+"-addallbtn").attr("disabled","disabled");
         $("#panel"+pID+"-chart-select").hide();
         $("#panel"+pID+"-chart-area").hide();
+    }
+
+    for (var i=0; i<allSiblings.length; i++){
+        console.log(parseInt($(allSiblings[i]).css("top")));
+        console.log(parseInt($(allSiblings[i]).css("left")));
+        console.log(parseInt($(allSiblings[i]).attr("tempofftop")));
+        console.log(parseInt($(allSiblings[i]).attr("tempoffleft")));
+        console.log($(allSiblings[i]).offset().top);
+        console.log($(allSiblings[i]).offset().left);
+        $(allSiblings[i]).css("top",parseInt($(allSiblings[i]).css("top"))+parseInt($(allSiblings[i]).attr("tempofftop"))-$(allSiblings[i]).offset().top);
+        $(allSiblings[i]).css("left",parseInt($(allSiblings[i]).css("left"))+parseInt($(allSiblings[i]).attr("tempoffleft"))-$(allSiblings[i]).offset().left);
     }
 }
 
@@ -660,12 +695,19 @@ function updateDefaultChart(pID) {
             nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
             createBarChart(pID,qID,currentSurveyIndex,"Response");
         }
+        else if (surveyDataTable[currentSurveyIndex][1][qID] == "Multiple Responses") {
+            nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
+            createBarChart(pID,qID,currentSurveyIndex,"Multiple Responses");
+        }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Numeric") {
             nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
             createBarChart(pID,qID,currentSurveyIndex,"Numeric");
         }
-        else {
+        else if (surveyDataTable[currentSurveyIndex][1][qID] == "Open-Ended Response") {
             createWordCloud(pID,qID,currentSurveyIndex);
+        }
+        else {
+            //createWordCloud(pID,qID,currentSurveyIndex);
         }
     }
 
@@ -679,6 +721,8 @@ function updateDefaultChart(pID) {
         cancel: "text",
         cancel: "svg",
         start: function(event, ui) {
+            //console.log($(this));
+            $(this).attr("dragged","yes");
             $(this).css("z-index",100);
             $(this).siblings().css("z-index",0);
         },
@@ -691,11 +735,11 @@ function updateDefaultChart(pID) {
 
 function showAllResponses(pID,qID) {
     var currentSurveyIndex = $("#panel"+pID+"-surveyselector").val();
-    var currentSurveyName = $("#panel"+pID+"-surveyselector").text();
+    var currentSurveyName = surveyDataIndex[$("#panel"+pID+"-surveyselector").val()];
     var currentResponseNum = surveyDataTable[currentSurveyIndex].length;
     var currentQuestionText = $("#panel"+pID+"-sm"+qID+"-heading").text();
 
-    var nextAllResponses = newAllResponsesDOM(pID,qID);
+    var nextAllResponses = newAllResponsesDOM(currentSurveyIndex,qID);
     nextAllResponses.find(".panel-heading").text("(All responses for) "+currentSurveyName+" "+currentQuestionText);
     nextAllResponses.find(".panel-heading").attr("title",$("#panel"+pID+"-sm"+qID+"-heading").text());
     //nextAllResponses.appendTo("#more-col"+pID);
@@ -716,19 +760,28 @@ function showAllResponses(pID,qID) {
     //     cancel: '.resp-text',
     //     forcePlaceholderSize: true
     // }).disableSelection();
-    
+    nextAllResponses.attr("keepleft",nextAllResponses.position().left);
+    nextAllResponses.attr("keeptop",nextAllResponses.position().top);
     nextAllResponses.resizable({
         start: function(event, ui){
-            $(this).attr("keepleft",parseInt($(this).css("left")));
-            $(this).attr("keeptop",parseInt($(this).css("top")));
+            setActivePanel($(this));
+            $(this).attr("keepleft",parseInt($(this).offset().left));
+            $(this).attr("keeptop",parseInt($(this).offset().top));
         },
         resize: function(event, ui) {
             $(this).css("position","fixed");
             $(this).css("left",$(this).attr("keepleft")+"px");
             $(this).css("top",$(this).attr("keeptop")+"px");
-            $(this).css("position","relative");
+            $(this).attr("keepleft",parseInt($(this).offset().left));
+            $(this).attr("keeptop",parseInt($(this).offset().top));
+            //$(this).css("position","relative");
             newPanelHeight = parseInt(ui.size["height"]);
             $(this).find(".resp-text").css("height",(newPanelHeight-72)+"px");
+        },
+        stop: function(event, ui) {
+            $(this).css("position","relative");
+            $(this).css("left",-$(this).offset().left+parseInt($(this).attr("keepleft"))*2+"px");
+            $(this).css("top",-$(this).offset().top+parseInt($(this).attr("keeptop"))*2+"px");
         }
     });
     //nextAllResponses.css("overflow","auto").css("resize","both");
@@ -742,6 +795,10 @@ function showAllResponses(pID,qID) {
             $(this).siblings().css("z-index",0);
             setActivePanel($(this));            
         },
+        stop: function(event, ui) {
+            $(this).attr("keepleft",nextAllResponses.position().left);
+            $(this).attr("keeptop",nextAllResponses.position().top);
+        }
     });
 }
 

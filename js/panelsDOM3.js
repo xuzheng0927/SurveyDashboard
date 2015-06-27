@@ -242,10 +242,10 @@ function newMoreInfoColDOM(pID) {
     return $('<div class="'+more_panel_col_class+'"panel-container ui-widget-content more-col" id="more-col'+pID+'" pID='+pID+'></div>');
 }
 
-function newAllResponsesDOM(pID,qID) {
+function newAllResponsesDOM(sID,qID) {
     //var DOMstring = '<div class="col-lg-6 resp-panel" id="panel'+pID+'-resp-panel'+qID+'" pID='+pID+' qID='+qID;
     //DOMstring += ' style="margin-right:0px; padding:10px"><div class="col-lg-12 panel panel-primary" style="padding:0px">';
-    var DOMstring = '<div class="'+more_panel_col_class+' resp-panel panel panel-default" id="panel'+pID+'-resp-panel'+qID+'" pID='+pID+' qID='+qID;
+    var DOMstring = '<div class="'+more_panel_col_class+' resp-panel panel panel-default" id="survey'+sID+'-resp-panel'+qID+'" sID='+sID+' qID='+qID;
     DOMstring += ' style="margin-right:10px; padding:0px">';
 
     // Close button
@@ -255,7 +255,7 @@ function newAllResponsesDOM(pID,qID) {
     DOMstring += '</div>';
 
     DOMstring += '<textarea rows=3 class="panel-heading panel-default-heading col-lg-12 col-md-12 col-sm-12 col-xs-12" ';
-    DOMstring += 'style="resize:none; padding-right:18px" readonly="readonly" id="panel'+pID+'-sm'+qID+'-heading">';
+    DOMstring += 'style="resize:none; padding-right:18px" readonly="readonly" id="survey'+sID+'-sm'+qID+'-heading">';
     DOMstring += 'Question '+qID;
     DOMstring +='</textarea>';
 

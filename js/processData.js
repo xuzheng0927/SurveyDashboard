@@ -13,28 +13,54 @@ function getResponseAnswer(json) {
 		if (json[1][q] == "Open-Ended Response"){
 			responseAnswerList[q] = null;
 		}
-		else if (json[1][q] == "Response") {
+		else if (json[1][q] == "Response" | json[1][q] == "Multiple Responses") {
 			responseAnswerList[q] = new Array();
 			answerCount = 0;
 			for (var i = 2; i < json.length; i++) {
 				if (responseAnswerList[q].length == 0){
-					responseAnswerList[q][0] = json[i][q];
-					answerCount = 1;
+					if (json[i][q] instanceof Array == true) {
+						for (var r = 0; r < json[i][q].length; r++){
+							responseAnswerList[q][r] = json[i][q][r];
+						}
+						answerCount = json[i][q].length;
+					}
+					else {
+						responseAnswerList[q][0] = json[i][q];
+						answerCount = 1;
+					}
 				}
 				else {
-					newAnswer = true;
-					answerCount = responseAnswerList[q].length;
-					//console.log("current answers:"+answerCount);
-					for (var j = 0; j < answerCount; j++){
-						//console.log(j);
-						if (json[i][q] == responseAnswerList[q][j] | json[i][q]=="") {
-							newAnswer = false;
-							break;
+					if (json[i][q] instanceof Array == true) {
+						for (var r = 0; r < json[i][q].length; r++){
+							newAnswer = true;
+							answerCount = responseAnswerList[q].length;
+							for (var j = 0; j < answerCount; j++){
+								if (json[i][q][r] == responseAnswerList[q][j] | json[i][q][r]=="" | json[i][q]==null){
+									newAnswer = false;
+									break;
+								}
+							}
+							if (newAnswer == true) {
+								responseAnswerList[q][answerCount] = json[i][q][r];
+							}
 						}
 					}
-					if (newAnswer == true) {
-						responseAnswerList[q][answerCount] = json[i][q];
+					else {
+						newAnswer = true;
+						answerCount = responseAnswerList[q].length;
+						//console.log("current answers:"+answerCount);
+						for (var j = 0; j < answerCount; j++){
+							//console.log(j);
+							if (json[i][q] == responseAnswerList[q][j] | json[i][q]=="" | json[i][q]==null) {
+								newAnswer = false;
+								break;
+							}
+						}
+						if (newAnswer == true) {
+							responseAnswerList[q][answerCount] = json[i][q];
+						}
 					}
+					
 					//console.log(responseAnswerList);
 				}
 			}
@@ -52,19 +78,24 @@ function getResponseAnswer(json) {
 				}
 			}*/
 		}
-		else { // Numeric attributes
+		else if (json[1][q] == "Numeric"){ // Numeric attributes
 			responseAnswerList[q] = new Array();
 			var binNum = 5;
 			var fullArray = new Array();
 			for (var i=2; i < json.length; i++) {
-				fullArray[i-2] = json[i][q];
+				//fullArray[i-2] = json[i][q];
+				if (json[i][q] != null) fullArray[fullArray.length] = json[i][q];
 			}
 			var maxInArray = Math.max.apply(null,fullArray);
 			var minInArray = Math.min.apply(null,fullArray);
+			//console.log(fullArray+" "+maxInArray+" "+minInArray);
 			//var binValues = new Array();
 			for (var i=0; i < binNum; i++) {
 				responseAnswerList[q][i] = minInArray + (maxInArray - minInArray) / binNum * (i+1);
 			}
+		}
+		else {
+
 		}
 	}
 	return responseAnswerList;

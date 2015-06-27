@@ -50,12 +50,18 @@ function createBarChart(pID, qID, sID, RespType) {
 		.attr("x",newSVGWidth*0.3)
 		//.attr("x",0)
 		//.attr("y",newSVGHeight*0.1)
-		.attr("width",newSVGWidth*currentRespHistogram[i]/Math.max.apply(null,currentRespHistogram)*0.65)
+		.attr("width",function(d){
+			if (d == 0) return newSVGWidth * 0.01;
+			else return newSVGWidth*d/Math.max.apply(null,currentRespHistogram)*0.65;
+		})
 		.attr("height", newSVGHeight*0.70 < containerHeight/5 ? newSVGHeight*0.70 : containerHeight/5)
 		.attr("y",function(d){
 			return (newSVGHeight - $(this).attr("height")) / 2;
 		})
-		.attr("fill", "#888888")
+		.attr("fill", function(d){
+			if (d == 0) return "#FFFFFF";
+			else return "#888888";
+		})
 		.attr("stroke","black")
 		.append("title").text(currentRespHistogram[i]+" response(s)");
 
@@ -78,12 +84,21 @@ function createBarChart(pID, qID, sID, RespType) {
 
 function getHistogramData(responseList, qID, sID, RespType) {
 	var histogramData = new Array();
-	if (RespType == "Response") {
+	if (RespType == "Response" | RespType == "Multiple Responses") {
 		for (var i=0; i < responseList.length; i++) {
 			histogramData[i] = 0;
 			for (var j=2; j < surveyDataTable[sID].length; j++) {
-				if (surveyDataTable[sID][j][qID] == responseList[i]) {
-					histogramData[i] += 1;
+				if (surveyDataTable[sID][j][qID] instanceof Array == true) {
+					for (var r=0; r<surveyDataTable[sID][j][qID].length; r++){
+						if (surveyDataTable[sID][j][qID][r] == responseList[i]) {
+							histogramData[i] += 1;
+						}
+					}
+				}
+				else {
+					if (surveyDataTable[sID][j][qID] == responseList[i]) {
+						histogramData[i] += 1;
+					}
 				}
 			}
 		}
@@ -94,6 +109,9 @@ function getHistogramData(responseList, qID, sID, RespType) {
 			for (var j=2; j < surveyDataTable[sID].length; j++) {
 				if (i == 0) {
 					if (surveyDataTable[sID][j][qID] < responseList[0]) histogramData[i] += 1;
+				}
+				else if (i == responseList.length - 1){
+					if (surveyDataTable[sID][j][qID] >= responseList[i-1]) histogramData[i] += 1;
 				}
 				else {
 					if (surveyDataTable[sID][j][qID] >= responseList[i-1] & surveyDataTable[sID][j][qID] < responseList[i]) {
@@ -158,8 +176,9 @@ function resizeRect(pID, qID) {
 		.attr("x",newSVGWidth*0.3)
 		.attr("y",newSVGHeight*0.1)
 		.attr("width",function(d,i) {
-			return newSVGWidth*d/maxValue*0.65;
+			if (d == 0) return newSVGWidth*0.01;
+			else return newSVGWidth*d/maxValue*0.65;
 		})
 		.attr("height", newSVGHeight*0.70)
-		.attr("fill", "#888888");
+		//.attr("fill", "#888888");
 }

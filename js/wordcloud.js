@@ -4,6 +4,8 @@ wordFilterList = ["I","you","he","she","they","it","me","him","her","them","my",
 wordTrimList = [",",".",":",";","!"];
 
 magnifyPara = 1.3;
+max_proportion = 5;
+cut_threshold = 2;
 
 function createWordCloud (pID, qID, sID) {
 	var responseText;
@@ -11,14 +13,14 @@ function createWordCloud (pID, qID, sID) {
 	var allText = "";
 
 	for (var i=2; i<currentSurveyData.length; i++) {
-		if (currentSurveyData[i][qID].length > 0) {
+		if (currentSurveyData[i][qID]==null ? false : currentSurveyData[i][qID].length > 0) {
 			allText += currentSurveyData[i][qID]
 			allText += " ";
 		}
 	}
 	//console.log(allText);
 	var frequencyList = convertToFrqList(allText);
-	frequencyList = cutByThreshold(frequencyList,5);
+	//frequencyList = cutByThreshold(frequencyList,cut_threshold);
 	//console.log(frequencyList);
 
 	$("#panel"+pID+"-sm"+qID+" .chart-container").append($('<svg style="width:100%;height:100%"></svg>'));
@@ -27,9 +29,12 @@ function createWordCloud (pID, qID, sID) {
 	$("#panel"+pID+"-sm"+qID+" svg").attr("originWidth",currentSVGWidth);
 	$("#panel"+pID+"-sm"+qID+" svg").attr("originHeight",currentSVGHeight);
 
+	frequencyList = getActualFontSize(frequencyList,$("#panel"+pID+"-sm"+qID+" svg"));
+	frequencyList = cutByThreshold(frequencyList,cut_threshold);
+
 	d3.layout.cloud().size([currentSVGWidth, currentSVGHeight])
 	.words(frequencyList)
-	.padding(3)
+	.padding(2)
 	.rotate(0)
 	.font("Impact")
 	.fontSize(function(d) {return d.size;})
@@ -52,7 +57,7 @@ function createWordCloud (pID, qID, sID) {
 			return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
 		})
 		.text(function(d) { return d.text;})
-		.append("title").text(function(d) { return d.text+": "+d.size+" times";});
+		.append("title").text(function(d) { return d.text+": "+d.realsize+" times";});
 	}
 }
 
@@ -108,6 +113,7 @@ function getFrequencyList(fullwordList) {
 			frequencyList[0] = new Object();
 			frequencyList[0]["text"] = fullwordList[0].toLowerCase();
 			frequencyList[0]["size"] = 1;
+			frequencyList[0]["realsize"] = 1;
 			//wordArray[0] = fullwordList[0].toLowerCase();
 			//frequencyArray[0] = 1;
 		}
@@ -121,6 +127,7 @@ function getFrequencyList(fullwordList) {
 				// }
 				if (fullwordList[i].toLowerCase() == frequencyList[j]["text"].toLowerCase()){
 					frequencyList[j]["size"] += 1;
+					frequencyList[j]["realsize"] += 1;
 					matchFound = true;
 					continue;
 				}
@@ -129,12 +136,12 @@ function getFrequencyList(fullwordList) {
 				frequencyList[frequencyList.length] = new Object();
 				frequencyList[frequencyList.length-1]["text"] = fullwordList[i].toLowerCase();
 				frequencyList[frequencyList.length-1]["size"] = 1;
+				frequencyList[frequencyList.length-1]["realsize"] = 1;
 				//wordArray[wordArray.length] = fullwordList[i].toLowerCase();
 				//frequencyArray[frequencyArray.length] = 1;
 			}
 		}
 	}
-
 	return frequencyList;
 }
 
@@ -144,6 +151,21 @@ function cutByThreshold(List,Threshold) {
 		if (List[i]["size"] >= Threshold) newList[newList.length] = List[i];
 	}
 	return newList;
+}
+
+function getActualFontSize(List, Panel) {
+	//var max_val = 0;
+	var size_sum = 0;
+	for (var i = 0; i < List.length; i++) {
+		//if (List[i]["size"] > max_val) max_val = List[i]["size"];
+		size_sum += List[i]["size"];
+	}
+	var panel_dimension = Math.min(parseInt(Panel.css("height")),parseInt(Panel.css("width")));
+	for (var i = 0; i < List.length; i++) {
+		//List[i]["size"] *= (max_proportion * panel_dimension / max_val);
+		List[i]["size"] *= (max_proportion * panel_dimension / size_sum);
+	}
+	return List;
 }
 
 function resizeCloud(pID, qID) {
