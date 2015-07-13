@@ -30,8 +30,10 @@ function equalArrays(array1, array2) {
 
 function containedInArray(element, arr){
 	var contained = false;
-	for (var i=0; i<arr.length; i++) {
-		if (arr[i] == element) contained = true;
+	if (arr != null) {
+		for (var i=0; i<arr.length; i++) {
+			if (arr[i] == element) contained = true;
+		}
 	}
 	return contained;
 }
@@ -45,3 +47,4 @@ function removeElement(element, arr){
 	}
 	return newArray;
 }
+

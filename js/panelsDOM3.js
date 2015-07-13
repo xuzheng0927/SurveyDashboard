@@ -5,7 +5,7 @@ more_panel_col_class="col-lg-3";
 
 // Function to return a panel container DOM with specified ID
 function newColumnDOM(ID) {
-    return $('<div class="'+panel_col_class+' panel-container ui-widget-content" id="col'+ID+'" style="padding:0px; margin-bottom:5px" pID='+ID+'></div>');
+    return $('<div class="'+panel_col_class+' panel-container ui-widget-content" id="col'+ID+'" style="padding:0px; margin-bottom:5px;" pID='+ID+'></div>');
 }
 
 // Function to return a panel container DOM with specified ID, with close button and setting-toggling button
@@ -22,8 +22,8 @@ function newPanelDOM(ID) {
     DOMstring += '<span class="glyphicon glyphicon-cog" aria-hidden="true"></span></span>';
 
     // Setting-toggling button
-    DOMstring += '<span class="btn pull-left hide-chart-btn" id="panel'+ID+'-hide-chart-btn" style="margin-left:0px;padding-left:5px">';
-    DOMstring += '<span class="glyphicon glyphicon-stats" aria-hidden="true"></span></span>';
+    //DOMstring += '<span class="btn pull-left hide-chart-btn" id="panel'+ID+'-hide-chart-btn" style="margin-left:0px;padding-left:5px">';
+    //DOMstring += '<span class="glyphicon glyphicon-stats" aria-hidden="true"></span></span>';
 
     // Panel header and panel close tag
     DOMstring += '<div class="panel-heading panel-primary-heading" style="text-align:center" id="panel'+ID+'-heading">New Panel '+ID+'</div>';
@@ -40,11 +40,11 @@ function newSurveyAreaDOM(pID) {
     DOMstring += '<div class="col-lg-12 col-sm-12 col-xs-12" style="padding-left:20px">';
     DOMstring += '<select id="panel'+pID+'-surveyselector"';
     DOMstring += 'class="selectpicker surveyselector vcenter" data-max-options="1" data-live-search="true" ';
-    DOMstring += 'data-live-search-placeholder="Search" title="Choose a survey" data-width="80%">';
+    DOMstring += 'data-live-search-placeholder="Search" title="Choose a survey" data-width="80%" data-container="body">';
 
     // Add in available survey entries
     for (var i = 0; i < surveyDataIndex.length; i ++){
-        DOMstring += '<option value = '+i+'>'+surveyDataIndex[i]+'</option>';
+        DOMstring += '<option value = '+i+' title="'+surveyDataIndex[i]+'">'+surveyDataIndex[i]+'</option>';
     }
     DOMstring += '</select></div>';
 
@@ -92,7 +92,7 @@ function newQuestionSelectorDOM(pID) {
     DOMstring += ' pID='+pID;
 
 	DOMstring += ' class="selectpicker question-selector" multiple data-live-search="true" data-selected-text-format="count"';
-    DOMstring += ' data-live-search-placeholder="Search" title="Choose a question" data-width="80%">';
+    DOMstring += ' data-live-search-placeholder="Search" title="Choose a question" data-width="80%" data-container="body">';
 
 	// Add in available survey entries
     var surveyIndex = $("#panel"+pID+"-surveyselector").val();
@@ -104,12 +104,16 @@ function newQuestionSelectorDOM(pID) {
         var questionDetected = false;
 
         for (q in questionList) {
-            DOMstring += '<option id = "panel'+pID+'-selector-'+q+'" value = '+q+'>'+q+':'+questionList[q]+'</option>';
+            var questionText = questionList[q].length > 80 ? questionList[q].substring(0,80)+"..." : questionList[q];
+            DOMstring += '<option id = "panel'+pID+'-selector-'+q+'" value = '+q+' title="'+questionList[q]+'">'+q+':'+questionText+'</option>';
         }
     }
     
 
-	DOMstring += '</select></div>';
+	DOMstring += '</select>';
+    //DOMstring += '<div id="dvDiv'+pID+'" style="display:none;position:absolute;padding:1px;border:1px solid #333333;;background-color:#fffedf;font-size:smaller;z-index:999;"></div>';
+    //DOMstring+= '<iframe id="frm'+pID+'" style="display:none;position:absolute;z-index:998"></iframe>';
+    DOMstring += '</div>';
 
 	return $(DOMstring);
 }
@@ -173,6 +177,8 @@ function newChartSelectDOM(pID) {
 function newChartAreaDOM(pID) {
     var DOMstring = '<div class="row chart-area" pID='+pID+' id="panel'+pID+'-chart-area" ';
     DOMstring += 'style="width:100%; height:100%; padding-left:25px; padding-right:20px; padding-bottom:0px; overflow-y:auto">';
+
+    //DOMstring += '<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vcenter" style="height:150px"><h1 style="color:#BBBBBB">No Chart</h1></div>';
 
     //DOMstring += '<div class="col-lg-12 col-sm-12 col-xs-12">';
     //DOMstring += '<text text-anchor="middle" x="100" y="20" font-size="20"></text>';
@@ -245,7 +251,7 @@ function newMoreInfoColDOM(pID) {
 function newAllResponsesDOM(sID,qID) {
     //var DOMstring = '<div class="col-lg-6 resp-panel" id="panel'+pID+'-resp-panel'+qID+'" pID='+pID+' qID='+qID;
     //DOMstring += ' style="margin-right:0px; padding:10px"><div class="col-lg-12 panel panel-primary" style="padding:0px">';
-    var DOMstring = '<div class="'+more_panel_col_class+' resp-panel panel panel-default" id="survey'+sID+'-resp-panel'+qID+'" sID='+sID+' qID='+qID;
+    var DOMstring = '<div class="'+more_panel_col_class+' resp-panel panel panel-container panel-default" id="survey'+sID+'-resp-panel'+qID+'" sID='+sID+' qID='+qID;
     DOMstring += ' style="margin-right:10px; padding:0px">';
 
     // Close button
