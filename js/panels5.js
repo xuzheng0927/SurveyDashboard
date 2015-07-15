@@ -3,6 +3,7 @@ window.focusID = 0;
 window.previousID = 0;
 window.maxID = 0;
 window.maxSelectorID = new Array();
+window.brushSettings = new Array();
 //panel_col_class="col-lg-12";
 
 function addNewPanel() {
@@ -98,11 +99,14 @@ function addNewPanel() {
         cancel: ".question-area",
         cancel: ".chart-area",
         cancel: ".resp-text",
+        cancel: "rect",
+        cancel: ".btn",
         forcePlaceholderSize: true
     });
     addOptionTags($("#panel"+focusID+"-surveyselector"));
 
-    nextColumn.slideDown();
+    //$("#panel"+focusID).css("margin","0");
+    nextColumn.animate({width:'toggle',height:'toggle'});
 }
 
 $('#btnAdd').click(function (e) {
@@ -111,12 +115,16 @@ $('#btnAdd').click(function (e) {
 
 // close or delete a panel, called when users click on the 'X' icon
 $('#panels').on('click', '.panel-close', function() {
-    $(this).parent().parent().remove();
+    $(this).parent().parent().animate({width:'toggle',height:'toggle'},"slow",function(){
+        $(this).remove();
+    });
+    //$(this).parent().parent().remove();
     //highlightPanel(topID);
     if ($("panels").children('panel-container').length > 0) {
         window.focusID = $("#panels").children().first().attr("pID");
         highlightPanel(window.focusID);
     }
+    //$(this).parent().parent().remove();
 });
 
 $('#panels').on('click', '.sm-panel-close', function() {
@@ -127,7 +135,13 @@ $('#panels').on('click', '.sm-panel-close', function() {
     var newValue = removeElement(valueToRemove,$("#panel"+panelID+"-selector").val());
     $("#panel"+panelID+"-selector").val(newValue);
     $("#panel"+panelID+"-selector").selectpicker("refresh");
-    $(this).parent().parent().parent().hide();
+    // var panelWidth = $(this).parent().parent().parent().css("width");
+    // var panelPadding = $(this).parent().parent().parent().css("padding");
+    // $(this).parent().parent().parent().attr("oldWidth",panelWidth);
+    // $(this).parent().parent().parent().attr("oldPadding",panelWidth);
+    $(this).parent().parent().parent().animate({width:'toggle',height:'toggle'});
+    //$(this).parent().parent().parent().animate({padding:0});
+    //$(this).parent().parent().parent().animate({width:0});
 });
 
 
@@ -193,10 +207,6 @@ $('#panels').on('click', 'div div .hide-chart-btn', function() {
     // $("#panel"+panelID+"-chart-area").toggle();
 });
 
-$('#panels').on('click','.label .btn', function() {
-    $(this).parent().remove();
-});
-
 $('#panels').on('change','.surveyselector', function() {
     var panelID = $(this).parent().parent().parent().parent().attr('pID');
     updatePanelBySurveyChange(panelID);
@@ -211,14 +221,37 @@ $('#panels').on('change','select.question-selector', function() {
     for (var i=0; i<allOptions.length; i++){
         currentPanel = $("#panel"+panelID+"-sm"+allOptions[i].value);
         if (containedInArray(allOptions[i].value, $(this).val())) {    
-            currentPanel.show();
+            //currentPanel.show();
+            if (currentPanel.css("display") == "none") {
+                currentPanel.animate({
+                    width: 'toggle',
+                    height: 'toggle',
+                },"normal",function(){
+                    if (currentPanel.find(".sm-panel-more").css("visibility") == "hidden") {
+                        resizeRect(currentPanel.attr("pID"),currentPanel.attr("qID"));
+                        console.log("resized");
+                    }
+                    else resizeCloud(currentPanel.attr("pID"),currentPanel.attr("qID"));
+                });
+            }
             //$(currentPanel).prependTo($("#panel"+panelID+"-chart-area"));
-            if (currentPanel.find(".sm-panel-more").css("visibility") == "hidden") {
-                    resizeRect(currentPanel.attr("pID"),currentPanel.attr("qID"));
-                }
-                else resizeCloud(currentPanel.attr("pID"),currentPanel.attr("qID"));
+            // if (currentPanel.find(".sm-panel-more").css("visibility") == "hidden") {
+            //     resizeRect(currentPanel.attr("pID"),currentPanel.attr("qID"));
+            //     console.log("resized");
+            // }
+            // else resizeCloud(currentPanel.attr("pID"),currentPanel.attr("qID"));
         }
-        else currentPanel.hide();
+        else {
+            //currentPanel.hide();
+            //currentPanel.attr("oldWidth",currentPanel.css("width"));
+            //currentPanel.attr("oldPadding",currentPanel.css("padding"));
+            if (currentPanel.css("display") != "none") {
+                currentPanel.animate({
+                    width: 'toggle',
+                    height: 'toggle'
+                });
+            }
+        }
     }
 });
 
@@ -277,7 +310,10 @@ $('#panels').on('click', '.resp-panel-close', function() {
     var panelID = $(this).parent().parent().attr('pID');
     var questionID = $(this).parent().parent().attr('qID');
     $("#panel"+panelID+"-sm"+questionID).find(".sm-panel-more").removeClass("active");
-    $(this).parent().parent().hide();
+    $(this).parent().parent().animate({width:'toggle',height:'toggle'},"slow",function(){
+        $(this).remove();
+    });
+    //$(this).parent().parent().hide();
 });
 
 $('#panels').on('click', '.panel-container', function() {
@@ -349,7 +385,7 @@ function updatePanelBySurveyChange(pID) {
         $(allSiblings[i]).attr("tempoffleft",parseInt($(allSiblings[i]).offset().left));
         $(allSiblings[i]).attr("tempcsstop",parseInt($(allSiblings[i]).css("top")));
         $(allSiblings[i]).attr("tempcssleft",parseInt($(allSiblings[i]).css("left")));
-        console.log($(allSiblings[i]).attr("tempofftop"));
+        //console.log($(allSiblings[i]).attr("tempofftop"));
     }
 
     if (newSurveyIndex != null) {
@@ -386,6 +422,7 @@ function updatePanelBySurveyChange(pID) {
             //helper: "ui-resizable-helper",
             //alsoResize: $(this).parent(),
             //resize: function(event, ui) {$(this).find("svg").css("top","-67px");}
+            start: function(event, ui) {$(this).find(".ui-resizable-se").css("bottom","1px");},
             resize: function(event, ui) {                   
                 setActivePanel($(this));
                 
@@ -430,15 +467,19 @@ function updatePanelBySurveyChange(pID) {
     }
 
     for (var i=0; i<allSiblings.length; i++){
-        console.log(parseInt($(allSiblings[i]).css("top")));
-        console.log(parseInt($(allSiblings[i]).css("left")));
-        console.log(parseInt($(allSiblings[i]).attr("tempofftop")));
-        console.log(parseInt($(allSiblings[i]).attr("tempoffleft")));
-        console.log($(allSiblings[i]).offset().top);
-        console.log($(allSiblings[i]).offset().left);
+        // console.log(parseInt($(allSiblings[i]).css("top")));
+        // console.log(parseInt($(allSiblings[i]).css("left")));
+        // console.log(parseInt($(allSiblings[i]).attr("tempofftop")));
+        // console.log(parseInt($(allSiblings[i]).attr("tempoffleft")));
+        // console.log($(allSiblings[i]).offset().top);
+        // console.log($(allSiblings[i]).offset().left);
         $(allSiblings[i]).css("top",parseInt($(allSiblings[i]).css("top"))+parseInt($(allSiblings[i]).attr("tempofftop"))-$(allSiblings[i]).offset().top);
         $(allSiblings[i]).css("left",parseInt($(allSiblings[i]).css("left"))+parseInt($(allSiblings[i]).attr("tempoffleft"))-$(allSiblings[i]).offset().left);
     }
+
+    // if (window.brushSettings[newSurveyIndex] instanceof Object) {
+    //     brushAllCharts(newSurveyIndex,window.brushSettings[newSurveyIndex].qID,window.brushSettings[newSurveyIndex].response,pID);
+    // }
 }
 
 function updateDefaultChart(pID) {
@@ -451,23 +492,30 @@ function updateDefaultChart(pID) {
         //var qID = i+1;
         qID = currentOptions[i].value;
         var nextSmallMultiplePanel = newSmallMultiplePanelDOM(pID,qID);
-        nextSmallMultiplePanel.find(".panel-heading").text($(currentOptions[i]).text());
-        nextSmallMultiplePanel.find(".panel-heading").attr("title",$(currentOptions[i]).text());
+        nextSmallMultiplePanel.find(".panel-heading").text(qID+":"+$(currentOptions[i]).attr("title"));
+        nextSmallMultiplePanel.find(".panel-heading").attr("title",qID+":"+$(currentOptions[i]).attr("title"));
         //$("#panel"+pID+"-sm"+(i+1)+'-heading').text($(currentOptions[i]).text());
         nextSmallMultiplePanel.appendTo("#panel"+pID+"-chart-area");
+        nextSmallMultiplePanel.attr("sID",currentSurveyIndex);
+        nextSmallMultiplePanel.css("width",nextSmallMultiplePanel.css("width"));
+        nextSmallMultiplePanel.find(".ui-resizable-se").css("bottom","1px");
         if (surveyDataTable[currentSurveyIndex][1][qID] == "Response") {
             nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
+            nextSmallMultiplePanel.addClass("sm-barchart");
             createBarChart(pID,qID,currentSurveyIndex,"Response");
         }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Multiple Responses") {
             nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
+            nextSmallMultiplePanel.addClass("sm-barchart");
             createBarChart(pID,qID,currentSurveyIndex,"Multiple Responses");
         }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Numeric") {
             nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
+            nextSmallMultiplePanel.addClass("sm-barchart-num");
             createBarChart(pID,qID,currentSurveyIndex,"Numeric");
         }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Open-Ended Response") {
+            nextSmallMultiplePanel.addClass("sm-cloud");
             createWordCloud(pID,qID,currentSurveyIndex);
         }
         else {
@@ -480,6 +528,10 @@ function updateDefaultChart(pID) {
         cancel: 'svg',
         forcePlaceholderSize: true
     }).disableSelection();
+
+    if (window.brushSettings[currentSurveyIndex] instanceof Object) {
+        brushAllCharts(currentSurveyIndex,window.brushSettings[currentSurveyIndex].qID,window.brushSettings[currentSurveyIndex].response,$("#panel"+pID));
+    }
 }
 
 function showAllResponses(pID,qID) {
@@ -498,8 +550,8 @@ function showAllResponses(pID,qID) {
     for (var i=2; i<currentResponseNum;i++){
         newText = surveyDataTable[currentSurveyIndex][i][qID];
         if (newText.length > 0){
-            nextAllResponses.find(".resp-text").append("<p>"+newText+"</p>");
-            nextAllResponses.find(".resp-text").append("<br>");
+            nextAllResponses.find(".resp-text").append("<div class='response' rID="+i+"><p>"+newText+"</p><br></div>");
+            //nextAllResponses.find(".resp-text").append("<br>");
         }
         //else console.log(i+": "+newText);
     }
@@ -518,10 +570,19 @@ function showAllResponses(pID,qID) {
             $(this).find(".resp-text").css("height",parseInt(self_height)-parseInt(heading_height));
         }
     });
-    $("body,html").animate({scrollTop:nextAllResponses.offset().top},0);
-    //nextAllResponses.siblings().animate({position:"relative"});
+
+    var scrollY = nextAllResponses.offset().top;
     nextAllResponses.hide();
-    nextAllResponses.slideDown();
+    $("body,html").animate({scrollTop:scrollY},"normal",function(){
+        //nextAllResponses.animate({width:"toggle",height:"toggle"});
+        nextAllResponses.show("normal");
+    });
+    if (window.brushSettings[currentSurveyIndex] instanceof Object) {
+        brushAllCharts(currentSurveyIndex,window.brushSettings[currentSurveyIndex].qID,window.brushSettings[currentSurveyIndex].response,nextAllResponses);
+    }
+    //nextAllResponses.siblings().animate({position:"relative"});
+    // nextAllResponses.hide();
+    // nextAllResponses.animate({width:"toggle",height:"toggle"});
     //nextAllResponses.css("overflow","auto").css("resize","both");
 }
 

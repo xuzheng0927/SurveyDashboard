@@ -6,7 +6,10 @@ function createBarChart(pID, qID, sID, RespType) {
 	var currentContainer = $("#panel"+pID+"-sm"+qID).find(".chart-container");
 	var containerHeight = parseInt(currentContainer.css("height"));
 	var currentRespHistogram = getHistogramData(currentResponseList, qID, sID, RespType);
-	if (RespType == "Numeric") currentResponseList = transformRespList(currentResponseList);
+	if (RespType == "Numeric") {
+		var numericResponseList = currentResponseList;
+		currentResponseList = transformRespList(currentResponseList);
+	}
 	var newResponseBar;
 	var newRespBarWidth;
 	var newRespBarHeight;
@@ -43,10 +46,14 @@ function createBarChart(pID, qID, sID, RespType) {
 		.text(currentResponseList[i].length < 20 ? currentResponseList[i] : currentResponseList[i].substring(0,20)+"...")
 		.append("title").text(currentResponseList[i]);
 
-		d3.select(newResponseBar.find("svg")[0]).selectAll("rect")
+		d3.select(newResponseBar.find("svg")[0]).selectAll(".totalRect")
 		.data([currentRespHistogram[i]])
 		.enter()
 		.append("rect")
+		.attr("class","totalRect")
+		.attr("cursor","pointer")
+		.attr("response",currentResponseList[i])
+		.attr("qID",qID)
 		.attr("x",newSVGWidth*0.3)
 		//.attr("x",0)
 		//.attr("y",newSVGHeight*0.1)
@@ -60,15 +67,37 @@ function createBarChart(pID, qID, sID, RespType) {
 		})
 		.attr("fill", function(d){
 			if (d == 0) return "#FFFFFF";
-			else return "#888888";
+			else return "#CCCCCC";
 		})
 		.attr("stroke","black")
+		.attr("onclick","brushAllCharts("+sID+",'"+qID+"','"+currentResponseList[i]+"')")
 		.append("title").text(currentRespHistogram[i]+" response(s)");
+
+		d3.select(newResponseBar.find("svg")[0]).selectAll(".brushedRect")
+		.data([currentRespHistogram[i]])
+		.enter()
+		.append("rect")
+		.attr("class","brushedRect")
+		.attr("cursor","pointer")
+		.attr("brushed","false")
+		.attr("x",newSVGWidth*0.3)
+		.attr("width",0)
+		.attr("height", newSVGHeight*0.70 < containerHeight/5 ? newSVGHeight*0.70 : containerHeight/5)
+		.attr("y",function(d){
+			return (newSVGHeight - $(this).attr("height")) / 2;
+		})
+		.attr("fill","#337CB7")
+		.attr("stroke","black")
+		.attr("onclick","clearBrushing("+sID+");")
+		.append("title");
 
 		newResponseBar.find("svg").attr("max",Math.max.apply(null,currentRespHistogram));
 	}
 
-	currentContainer.sortable();
+	currentContainer.sortable({
+		//items: "text",
+		//cancel: "rect"
+	});
 	/*d3.select(currentSVG[0]).selectAll("text")
 	.data(currentResponseList)
 	.enter()
@@ -132,9 +161,9 @@ function transformRespList(responseList) {
 			responseList[i] = (responseList[i]+"").substring(0,6);
 			//responseList[i] = Math.floor(responseList[i] * 100000) / 100000;
 		}
-		if (i == 0) newList[i] = "less than "+responseList[0];
-		else if (i == responseList.length-1) newList[i] = "more than "+responseList[i-1];
-		else newList[i] = "between "+responseList[i-1]+" and "+responseList[i];
+		if (i == 0) newList[i] = "<"+responseList[0];
+		else if (i == responseList.length-1) newList[i] = ">="+responseList[i-1];
+		else newList[i] = ">="+responseList[i-1]+" and <"+responseList[i];
 	}
 	return newList;
 }
@@ -176,9 +205,16 @@ function resizeRect(pID, qID) {
 		.attr("x",newSVGWidth*0.3)
 		.attr("y",newSVGHeight*0.1)
 		.attr("width",function(d,i) {
-			if (d == 0) return newSVGWidth*0.01;
-			else return newSVGWidth*d/maxValue*0.65;
+			if (d == 0){
+				if ($(this).attr("class") == "totalRect") return newSVGWidth*0.01;
+				else return 0;
+			}
+			else{
+				if ($(this).attr("brushed") == "false") return 0;
+				else return newSVGWidth*d/maxValue*0.65;
+			}
 		})
 		.attr("height", newSVGHeight*0.70)
 		//.attr("fill", "#888888");
+
 }

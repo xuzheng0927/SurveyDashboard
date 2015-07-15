@@ -11,7 +11,7 @@ function newColumnDOM(ID) {
 // Function to return a panel container DOM with specified ID, with close button and setting-toggling button
 function newPanelDOM(ID) {
 	// Panel tag with specified ID
-    var DOMstring = '<div class="panel panel-primary chart-panel" id="panel'+ID+'" pID='+ID+' style="padding:0px; overflow:hidden; width:100%">';
+    var DOMstring = '<div class="panel panel-primary chart-panel" id="panel'+ID+'" pID='+ID+' style="padding:0px; margin:0; overflow:hidden; width:100%">';
 
     // Close button
     DOMstring += '<button type="button" class="close pull-right panel-close" aria-label="Close">';
@@ -192,7 +192,7 @@ function newChartAreaDOM(pID) {
 function newSmallMultiplePanelDOM(pID,qID) {
     //var DOMstring = '<div class="panel panel-primary col-lg-3 col-sm-5 col-xs-12 sm-panel" id="panel'+pID+'-sm'+qID+'" pID='+pID+' qID='+qID;
     //DOMstring += ' style="margin-right:20px; padding:0px">';
-    var DOMstring = '<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 sm-panel " id="panel'+pID+'-sm'+qID+'" pID='+pID+' qID='+qID;
+    var DOMstring = '<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 sm-panel chart" id="panel'+pID+'-sm'+qID+'" pID='+pID+' qID='+qID;
     //var DOMstring = '<div class="sm-panel" id="panel'+pID+'-sm'+qID+'" pID='+pID+' qID='+qID;
     DOMstring += ' style="margin-right:0px; margin-bottom:5px; padding-left:0px; overflow:hidden;">';
     DOMstring += '<div class="col-lg-12 panel panel-primary" style="padding:0px;height:100%;border-color:black;">';
@@ -252,7 +252,7 @@ function newAllResponsesDOM(sID,qID) {
     //var DOMstring = '<div class="col-lg-6 resp-panel" id="panel'+pID+'-resp-panel'+qID+'" pID='+pID+' qID='+qID;
     //DOMstring += ' style="margin-right:0px; padding:10px"><div class="col-lg-12 panel panel-primary" style="padding:0px">';
     var DOMstring = '<div class="'+more_panel_col_class+' resp-panel panel panel-container panel-default" id="survey'+sID+'-resp-panel'+qID+'" sID='+sID+' qID='+qID;
-    DOMstring += ' style="margin-right:10px; padding:0px">';
+    DOMstring += ' style="margin-right:5px; margin-left:5px; padding:0px">';
 
     // Close button
     DOMstring += '<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="position:absolute;z-index:100">';
@@ -261,11 +261,11 @@ function newAllResponsesDOM(sID,qID) {
     DOMstring += '</div>';
 
     DOMstring += '<textarea rows=3 class="panel-heading panel-default-heading col-lg-12 col-md-12 col-sm-12 col-xs-12" ';
-    DOMstring += 'style="resize:none; padding-right:18px" readonly="readonly" id="survey'+sID+'-sm'+qID+'-heading">';
+    DOMstring += 'style="resize:none; padding-right:18px" readonly="readonly" id="survey'+sID+'-ar'+qID+'-heading">';
     DOMstring += 'Question '+qID;
     DOMstring +='</textarea>';
 
-    DOMstring += '<div class="col-lg-12 resp-text" readonly="readonly" style="height:200px; overflow:auto; resize:none"></div>';
+    DOMstring += '<div class="col-lg-12 resp-text chart" sID='+sID+' qID='+qID+' readonly="readonly" style="height:200px; overflow:auto; resize:none"></div>';
 
     DOMstring += '</div>';
     //DOMstring += '</div>';
