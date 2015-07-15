@@ -95,12 +95,7 @@ function addNewPanel() {
 
     $("#panels").sortable({
         items: '.panel-container',
-        cancel: ".survey-area",
-        cancel: ".question-area",
-        cancel: ".chart-area",
-        cancel: ".resp-text",
-        cancel: "rect",
-        cancel: ".btn",
+        cancel: ".no-drag",
         forcePlaceholderSize: true
     });
     addOptionTags($("#panel"+focusID+"-surveyselector"));
@@ -207,52 +202,68 @@ $('#panels').on('click', 'div div .hide-chart-btn', function() {
     // $("#panel"+panelID+"-chart-area").toggle();
 });
 
+$('#panels').on('click','.add-all', function() {
+    var panelID = $(this).parent().parent().parent().parent().attr('pID');
+    var allOptions = $("#panel"+panelID+"-selector option");
+    var allValues = new Array();
+    for (var i=0; i<allOptions.length; i++) allValues = allValues.concat(allOptions[i].value);
+    $("#panel"+panelID+"-selector").val(allValues);
+    $(".selectpicker").selectpicker("refresh");
+    updateChartByQuestionChange(panelID);
+});
+
+$('#panels').on('click','.rmv-all', function() {
+    var panelID = $(this).parent().parent().parent().parent().attr('pID');
+    $("#panel"+panelID+"-selector").val(null);
+    $(".selectpicker").selectpicker("refresh");
+    updateChartByQuestionChange(panelID);
+});
+
 $('#panels').on('change','.surveyselector', function() {
     var panelID = $(this).parent().parent().parent().parent().attr('pID');
     updatePanelBySurveyChange(panelID);
 });
 
-
 $('#panels').on('change','select.question-selector', function() {
     var panelID = $(this).attr('pID');
-    
-    var allOptions = $(this).find("option");
-    var currentPanel;
-    for (var i=0; i<allOptions.length; i++){
-        currentPanel = $("#panel"+panelID+"-sm"+allOptions[i].value);
-        if (containedInArray(allOptions[i].value, $(this).val())) {    
-            //currentPanel.show();
-            if (currentPanel.css("display") == "none") {
-                currentPanel.animate({
-                    width: 'toggle',
-                    height: 'toggle',
-                },"normal",function(){
-                    if (currentPanel.find(".sm-panel-more").css("visibility") == "hidden") {
-                        resizeRect(currentPanel.attr("pID"),currentPanel.attr("qID"));
-                        console.log("resized");
-                    }
-                    else resizeCloud(currentPanel.attr("pID"),currentPanel.attr("qID"));
-                });
-            }
-            //$(currentPanel).prependTo($("#panel"+panelID+"-chart-area"));
-            // if (currentPanel.find(".sm-panel-more").css("visibility") == "hidden") {
-            //     resizeRect(currentPanel.attr("pID"),currentPanel.attr("qID"));
-            //     console.log("resized");
-            // }
-            // else resizeCloud(currentPanel.attr("pID"),currentPanel.attr("qID"));
-        }
-        else {
-            //currentPanel.hide();
-            //currentPanel.attr("oldWidth",currentPanel.css("width"));
-            //currentPanel.attr("oldPadding",currentPanel.css("padding"));
-            if (currentPanel.css("display") != "none") {
-                currentPanel.animate({
-                    width: 'toggle',
-                    height: 'toggle'
-                });
-            }
-        }
-    }
+    updateChartByQuestionChange(panelID);
+    // var allOptions = $(this).find("option");
+    // var currentPanel;
+    // for (var i=0; i<allOptions.length; i++){
+    //     currentPanel = $("#panel"+panelID+"-sm"+allOptions[i].value);
+    //     if (containedInArray(allOptions[i].value, $(this).val())) {    
+    //         //currentPanel.show();
+    //         if (currentPanel.css("display") == "none") {
+    //             currentPanel.animate({
+    //                 width: 'toggle',
+    //                 height: 'toggle',
+    //             },"normal",function(){
+    //                 if (currentPanel.find(".sm-panel-more").css("visibility") == "hidden") {
+    //                     resizeRect(currentPanel.attr("pID"),currentPanel.attr("qID"));
+    //                     console.log("resized");
+    //                 }
+    //                 else resizeCloud(currentPanel.attr("pID"),currentPanel.attr("qID"));
+    //             });
+    //         }
+    //         //$(currentPanel).prependTo($("#panel"+panelID+"-chart-area"));
+    //         // if (currentPanel.find(".sm-panel-more").css("visibility") == "hidden") {
+    //         //     resizeRect(currentPanel.attr("pID"),currentPanel.attr("qID"));
+    //         //     console.log("resized");
+    //         // }
+    //         // else resizeCloud(currentPanel.attr("pID"),currentPanel.attr("qID"));
+    //     }
+    //     else {
+    //         //currentPanel.hide();
+    //         //currentPanel.attr("oldWidth",currentPanel.css("width"));
+    //         //currentPanel.attr("oldPadding",currentPanel.css("padding"));
+    //         if (currentPanel.css("display") != "none") {
+    //             currentPanel.animate({
+    //                 width: 'toggle',
+    //                 height: 'toggle'
+    //             });
+    //         }
+    //     }
+    // }
 });
 
 $('#panels').on('click','select.question-selector', function() {
@@ -409,8 +420,18 @@ function updatePanelBySurveyChange(pID) {
 
         $("#panel"+pID+"-heading").text(surveyDataIndex[$("#panel"+pID+"-surveyselector").val()]);
 
+        // $("#panel"+pID+" .sm-panel").animate({height:"toggle"},"normal",function(){
+        //     $("#panel"+pID+" .sm-panel").remove();
+        //     updateDefaultChart(pID);
+        //     $("#panel"+pID+" .sm-panel").show("normal");
+        // });
+        // $("#panel"+pID+" .chart-area").slideUp("normal",function(){
+        //     $("#panel"+pID+" .sm-panel").remove();
+        //     updateDefaultChart(pID);
+        // });
         $("#panel"+pID+" .sm-panel").remove();
         updateDefaultChart(pID);
+        $("#panel"+pID+" .chart-area").hide().slideDown("slow");
         //reorderQuestions(panelID);
 
         $("#panel"+pID).find(".sm-panel").resizable( {
@@ -422,7 +443,10 @@ function updatePanelBySurveyChange(pID) {
             //helper: "ui-resizable-helper",
             //alsoResize: $(this).parent(),
             //resize: function(event, ui) {$(this).find("svg").css("top","-67px");}
-            start: function(event, ui) {$(this).find(".ui-resizable-se").css("bottom","1px");},
+            start: function(event, ui) {
+                $(this).find(".ui-resizable-se").css("bottom","1px");
+                $(this).find(".ui-resizable-se").css("right","5px");
+            },
             resize: function(event, ui) {                   
                 setActivePanel($(this));
                 
@@ -453,8 +477,8 @@ function updatePanelBySurveyChange(pID) {
         $("#panel"+pID).find(".sm-panel .ui-resizable-e").hide();
         //nextColumn.find(".sm-panel .ui-resizable-s").css("bottom","7px");
         $("#panel"+pID).find(".sm-panel .ui-resizable-s").hide();
-        $("#panel"+pID).find(".sm-panel .ui-resizable-se").css("right","14px");
-        $("#panel"+pID).find(".sm-panel .ui-resizable-se").css("bottom","11px");
+        $("#panel"+pID).find(".sm-panel .ui-resizable-se").css("right","4px");
+        $("#panel"+pID).find(".sm-panel .ui-resizable-se").css("bottom","10px");
     }
     else {
         //$("#panel"+panelID+"-addbtn").hide();
@@ -498,7 +522,9 @@ function updateDefaultChart(pID) {
         nextSmallMultiplePanel.appendTo("#panel"+pID+"-chart-area");
         nextSmallMultiplePanel.attr("sID",currentSurveyIndex);
         nextSmallMultiplePanel.css("width",nextSmallMultiplePanel.css("width"));
-        nextSmallMultiplePanel.find(".ui-resizable-se").css("bottom","1px");
+        //nextSmallMultiplePanel.css("height",nextSmallMultiplePanel.css("height"));
+        // nextSmallMultiplePanel.find(".ui-resizable-se").css("bottom","1px");
+        // nextSmallMultiplePanel.find(".ui-resizable-se").css("right","5px");
         if (surveyDataTable[currentSurveyIndex][1][qID] == "Response") {
             nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
             nextSmallMultiplePanel.addClass("sm-barchart");
@@ -527,7 +553,7 @@ function updateDefaultChart(pID) {
         items: '.sm-panel',
         cancel: 'svg',
         forcePlaceholderSize: true
-    }).disableSelection();
+    });
 
     if (window.brushSettings[currentSurveyIndex] instanceof Object) {
         brushAllCharts(currentSurveyIndex,window.brushSettings[currentSurveyIndex].qID,window.brushSettings[currentSurveyIndex].response,$("#panel"+pID));
@@ -544,7 +570,8 @@ function showAllResponses(pID,qID) {
     nextAllResponses.find(".panel-heading").text("(All responses for) "+currentSurveyName+" "+currentQuestionText);
     nextAllResponses.find(".panel-heading").attr("title",$("#panel"+pID+"-sm"+qID+"-heading").text());
     //nextAllResponses.appendTo("#more-col"+pID);
-    nextAllResponses.prependTo("#panels");
+    //nextAllResponses.prependTo("#panels");
+    $("#col"+pID).after(nextAllResponses);
 
     var newText;
     for (var i=2; i<currentResponseNum;i++){
@@ -584,6 +611,11 @@ function showAllResponses(pID,qID) {
     // nextAllResponses.hide();
     // nextAllResponses.animate({width:"toggle",height:"toggle"});
     //nextAllResponses.css("overflow","auto").css("resize","both");
+    $("#panels").sortable({
+        items: '.panel-container',
+        cancel: ".no-drag",
+        forcePlaceholderSize: true
+    });
 }
 
 function setActivePanel(panel) {
@@ -595,12 +627,16 @@ function setActivePanel(panel) {
         if ($(siblingPanels[i]).hasClass("panel-primary")) $(siblingPanels[i]).removeClass("panel-primary").addClass("panel-default");
         $(siblingPanels[i]).find(".panel-primary").removeClass("panel-primary").addClass("panel-default");
         $(siblingPanels[i]).find(".panel-primary-heading").removeClass("panel-primary-heading").addClass("panel-default-heading");
+        $(siblingPanels[i]).find(".add-all").removeClass("btn-primary").addClass("btn-default");
+        $(siblingPanels[i]).find(".rmv-all").removeClass("btn-primary").addClass("btn-default");
     }
     panel.css("z-index",100);
     if (panel.hasClass("sm-panel")) return;
     if (panel.hasClass("panel-default")) panel.removeClass("panel-default").addClass("panel-primary");
     panel.find(".panel-default").removeClass("panel-default").addClass("panel-primary");
     panel.find(".panel-default-heading").removeClass("panel-default-heading").addClass("panel-primary-heading");
+    panel.find(".add-all").removeClass("btn-default").addClass("btn-primary");
+    panel.find(".rmv-all").removeClass("btn-default").addClass("btn-primary");
 }
 
 function resizePanelAfterToggle(pID) {
@@ -640,5 +676,45 @@ function adjustParentSize(panel) {
 
         parentElement.css("width",parentWidth);
         parentElement.css("height",parentHeight);
+    }
+}
+
+function updateChartByQuestionChange(pID) {
+    var allOptions = $("#panel"+pID+"-selector").find("option");
+    var currentPanel;
+    for (var i=0; i<allOptions.length; i++){
+        currentPanel = $("#panel"+pID+"-sm"+allOptions[i].value);
+        if (containedInArray(allOptions[i].value, $("#panel"+pID+"-selector").val())) {    
+            //currentPanel.show();
+            if (currentPanel.css("display") == "none") {
+                currentPanel.animate({
+                    width: 'toggle',
+                    height: 'toggle',
+                },"normal",function(){
+                    if (currentPanel.find(".sm-panel-more").css("visibility") == "hidden") {
+                        resizeRect(currentPanel.attr("pID"),currentPanel.attr("qID"));
+                        console.log("resized");
+                    }
+                    else resizeCloud(currentPanel.attr("pID"),currentPanel.attr("qID"));
+                });
+            }
+            //$(currentPanel).prependTo($("#panel"+panelID+"-chart-area"));
+            // if (currentPanel.find(".sm-panel-more").css("visibility") == "hidden") {
+            //     resizeRect(currentPanel.attr("pID"),currentPanel.attr("qID"));
+            //     console.log("resized");
+            // }
+            // else resizeCloud(currentPanel.attr("pID"),currentPanel.attr("qID"));
+        }
+        else {
+            //currentPanel.hide();
+            //currentPanel.attr("oldWidth",currentPanel.css("width"));
+            //currentPanel.attr("oldPadding",currentPanel.css("padding"));
+            if (currentPanel.css("display") != "none") {
+                currentPanel.animate({
+                    width: 'toggle',
+                    height: 'toggle'
+                });
+            }
+        }
     }
 }

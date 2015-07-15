@@ -1,6 +1,7 @@
 function createBarChart(pID, qID, sID, RespType) {
 	//var currentResponseList = surveyResponseAnswer[sID]["Q"+qID];
 	//console.log(sID+" "+qID);
+
 	var currentResponseList = surveyResponseAnswer[sID][qID];
 	var barHeight = Math.floor(100/currentResponseList.length);
 	var currentContainer = $("#panel"+pID+"-sm"+qID).find(".chart-container");
@@ -53,6 +54,14 @@ function createBarChart(pID, qID, sID, RespType) {
 		.attr("class","totalRect")
 		.attr("cursor","pointer")
 		.attr("response",currentResponseList[i])
+		.attr("upbound",RespType == "Numeric" ? numericResponseList[i] : null)
+		.attr("lobound",function(d){
+			if (RespType == "Numeric") {
+				if (i == 0) return Number.NEGATIVE_INFINITY;
+				else return numericResponseList[i-1];
+			}
+			else return null;
+		})
 		.attr("qID",qID)
 		.attr("x",newSVGWidth*0.3)
 		//.attr("x",0)
@@ -70,7 +79,13 @@ function createBarChart(pID, qID, sID, RespType) {
 			else return "#CCCCCC";
 		})
 		.attr("stroke","black")
-		.attr("onclick","brushAllCharts("+sID+",'"+qID+"','"+currentResponseList[i]+"')")
+		//.attr("onclick",'brushAllCharts('+sID+',"'+qID+'","'+currentResponseList[i]+'")')
+		.attr("onclick",function(d){
+			if (RespType == "Numeric") {
+				return 'brushAllCharts('+sID+',"'+qID+'",{"lobound":'+this.getAttribute("lobound")+',"upbound":'+this.getAttribute("upbound")+'});';
+			}
+			else return 'brushAllCharts('+sID+',"'+qID+'","'+currentResponseList[i]+'")';
+		})
 		.append("title").text(currentRespHistogram[i]+" response(s)");
 
 		d3.select(newResponseBar.find("svg")[0]).selectAll(".brushedRect")
@@ -109,6 +124,9 @@ function createBarChart(pID, qID, sID, RespType) {
 	.text(function(d,i) {
 		return d;
 	})*/
+	currentContainer.click(function(evt){
+		if(evt.target.tagName == "svg") clearBrushing(sID);
+	});
 };
 
 function getHistogramData(responseList, qID, sID, RespType) {
@@ -136,14 +154,15 @@ function getHistogramData(responseList, qID, sID, RespType) {
 		for (var i=0; i < responseList.length; i++) {
 			histogramData[i] = 0;
 			for (var j=2; j < surveyDataTable[sID].length; j++) {
+				if (surveyDataTable[sID][j][qID] == null) continue;
 				if (i == 0) {
-					if (surveyDataTable[sID][j][qID] < responseList[0]) histogramData[i] += 1;
+					if (surveyDataTable[sID][j][qID] <= responseList[0]) histogramData[i] += 1;
 				}
 				else if (i == responseList.length - 1){
-					if (surveyDataTable[sID][j][qID] >= responseList[i-1]) histogramData[i] += 1;
+					if (surveyDataTable[sID][j][qID] > responseList[i-1]) histogramData[i] += 1;
 				}
 				else {
-					if (surveyDataTable[sID][j][qID] >= responseList[i-1] & surveyDataTable[sID][j][qID] < responseList[i]) {
+					if (surveyDataTable[sID][j][qID] > responseList[i-1] & surveyDataTable[sID][j][qID] <= responseList[i]) {
 						histogramData[i] += 1;
 					}
 				}
@@ -161,9 +180,9 @@ function transformRespList(responseList) {
 			responseList[i] = (responseList[i]+"").substring(0,6);
 			//responseList[i] = Math.floor(responseList[i] * 100000) / 100000;
 		}
-		if (i == 0) newList[i] = "<"+responseList[0];
-		else if (i == responseList.length-1) newList[i] = ">="+responseList[i-1];
-		else newList[i] = ">="+responseList[i-1]+" and <"+responseList[i];
+		if (i == 0) newList[i] = "<="+responseList[0];
+		else if (i == responseList.length-1) newList[i] = ">"+responseList[i-1];
+		else newList[i] = ">"+responseList[i-1]+" and <="+responseList[i];
 	}
 	return newList;
 }

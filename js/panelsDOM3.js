@@ -34,7 +34,7 @@ function newPanelDOM(ID) {
 }
 
 function newSurveyAreaDOM(pID) {
-	var DOMstring = '<div class="survey-area col-lg-12 col-sm-12 col-xs-12" id="panel'+pID+'-survey-area" style="padding:5px">';
+	var DOMstring = '<div class="survey-area col-lg-12 col-sm-12 col-xs-12 no-drag" id="panel'+pID+'-survey-area" style="padding:5px">';
 
     // Add survey selector
     DOMstring += '<div class="col-lg-12 col-sm-12 col-xs-12" style="padding-left:20px">';
@@ -62,7 +62,7 @@ function newSurveyAreaDOM(pID) {
 }
 
 function newQuestionAreaDOM(pID) {
-    var DOMstring = '<div class="col-lg-12 col-md-12 question-area" id="panel'+pID+'-question-area" style="padding:5px"></div>'
+    var DOMstring = '<div class="col-lg-12 col-md-12 question-area no-drag" id="panel'+pID+'-question-area" style="padding:5px"></div>'
 
     return $(DOMstring);
 }
@@ -111,6 +111,9 @@ function newQuestionSelectorDOM(pID) {
     
 
 	DOMstring += '</select>';
+
+    DOMstring += '<button class="btn btn-primary add-all" style="margin-left:10px"><span class="glyphicon glyphicon-plus-sign"></span>&nbspAll</button>';
+    DOMstring += '<button class="btn btn-primary rmv-all" style="margin-left:10px"><span class="glyphicon glyphicon-minus-sign"></span>&nbspAll</button>';
     //DOMstring += '<div id="dvDiv'+pID+'" style="display:none;position:absolute;padding:1px;border:1px solid #333333;;background-color:#fffedf;font-size:smaller;z-index:999;"></div>';
     //DOMstring+= '<iframe id="frm'+pID+'" style="display:none;position:absolute;z-index:998"></iframe>';
     DOMstring += '</div>';
@@ -176,7 +179,7 @@ function newChartSelectDOM(pID) {
 
 function newChartAreaDOM(pID) {
     var DOMstring = '<div class="row chart-area" pID='+pID+' id="panel'+pID+'-chart-area" ';
-    DOMstring += 'style="width:100%; height:100%; padding-left:25px; padding-right:20px; padding-bottom:0px; overflow-y:auto">';
+    DOMstring += 'style="width:100%; height:100%; padding-left:10px; padding-right:10px; padding-bottom:0px; margin:0px; overflow-y:auto">';
 
     //DOMstring += '<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vcenter" style="height:150px"><h1 style="color:#BBBBBB">No Chart</h1></div>';
 
@@ -194,7 +197,7 @@ function newSmallMultiplePanelDOM(pID,qID) {
     //DOMstring += ' style="margin-right:20px; padding:0px">';
     var DOMstring = '<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 sm-panel chart" id="panel'+pID+'-sm'+qID+'" pID='+pID+' qID='+qID;
     //var DOMstring = '<div class="sm-panel" id="panel'+pID+'-sm'+qID+'" pID='+pID+' qID='+qID;
-    DOMstring += ' style="margin-right:0px; margin-bottom:5px; padding-left:0px; overflow:hidden;">';
+    DOMstring += ' style="margin-right:0px; margin-bottom:5px; padding-left:5px; padding-right:5px; overflow:hidden;">';
     DOMstring += '<div class="col-lg-12 panel panel-primary" style="padding:0px;height:100%;border-color:black;">';
 
     // Close button
@@ -220,7 +223,7 @@ function newSmallMultiplePanelDOM(pID,qID) {
     //DOMstring += '</div>';
 
 
-    DOMstring += '<div class="col-lg-12 chart-container" style="height:200px"></div>';
+    DOMstring += '<div class="col-lg-12 chart-container no-drag" style="height:200px"></div>';
 
     DOMstring += '<span class="btn btn-default btn-xs pull-right sm-panel-more" style="margin:2px;position:absolute;bottom:0px;right:8px">More</span>';
 
@@ -265,7 +268,7 @@ function newAllResponsesDOM(sID,qID) {
     DOMstring += 'Question '+qID;
     DOMstring +='</textarea>';
 
-    DOMstring += '<div class="col-lg-12 resp-text chart" sID='+sID+' qID='+qID+' readonly="readonly" style="height:200px; overflow:auto; resize:none"></div>';
+    DOMstring += '<div class="col-lg-12 resp-text chart no-drag" sID='+sID+' qID='+qID+' readonly="readonly" style="height:200px; overflow:auto; resize:none"></div>';
 
     DOMstring += '</div>';
     //DOMstring += '</div>';
