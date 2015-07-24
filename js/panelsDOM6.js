@@ -1,7 +1,12 @@
 // DOM script file for panels3.js
 
 panel_col_class="col-lg-12";
-sm_panel_class="col-lg-2 col-md-3 col-sm-6 col-xs-12";
+sm_panel_class={"Response":"col-lg-2 col-md-3 col-sm-6 col-xs-12",
+                "Multiple Responses":"col-lg-2 col-md-3 col-sm-6 col-xs-12",
+                "Numeric":"col-lg-2 col-md-3 col-sm-6 col-xs-12",
+                "Open-Ended Response":"col-lg-4 col-md-6 col-sm-12 col-xs-12",
+                "Ranking Response":"col-lg-2 col-md-3 col-sm-6 col-xs-12",};
+
 more_panel_col_class="col-lg-3";
 default_sm_height=180;
 default_smcon_height=113;
@@ -195,10 +200,10 @@ function newChartAreaDOM(pID) {
     return $(DOMstring);
 }
 
-function newSmallMultiplePanelDOM(pID,qID) {
+function newSmallMultiplePanelDOM(pID,qID,panel_class) {
     //var DOMstring = '<div class="panel panel-primary col-lg-3 col-sm-5 col-xs-12 sm-panel" id="panel'+pID+'-sm'+qID+'" pID='+pID+' qID='+qID;
     //DOMstring += ' style="margin-right:20px; padding:0px">';
-    var DOMstring = '<div class="'+sm_panel_class+' sm-panel chart" id="panel'+pID+'-sm'+qID+'" pID='+pID+' qID='+qID;
+    var DOMstring = '<div class="'+panel_class+' sm-panel chart" id="panel'+pID+'-sm'+qID+'" pID='+pID+' qID='+qID;
     //var DOMstring = '<div class="sm-panel" id="panel'+pID+'-sm'+qID+'" pID='+pID+' qID='+qID;
     DOMstring += ' style="margin-right:0px; margin-bottom:5px; padding-left:5px; padding-right:5px; overflow:hidden; height:'+default_sm_height+'">';
     DOMstring += '<div class="col-lg-12 panel panel-primary" style="padding:0px;height:100%;border-color:black;">';

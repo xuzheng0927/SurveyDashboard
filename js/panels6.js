@@ -388,7 +388,8 @@ function updateDefaultChart(pID) {
     for (var i=0; i<currentOptions.length;i++){
         //var qID = i+1;
         qID = currentOptions[i].value;
-        var nextSmallMultiplePanel = newSmallMultiplePanelDOM(pID,qID);
+        var panel_class = sm_panel_class[surveyDataTable[currentSurveyIndex][1][qID]];
+        var nextSmallMultiplePanel = newSmallMultiplePanelDOM(pID,qID,panel_class);
         nextSmallMultiplePanel.find(".panel-heading").text(qID+":"+$(currentOptions[i]).attr("title"));
         nextSmallMultiplePanel.find(".panel-heading").attr("title",qID+":"+$(currentOptions[i]).attr("title"));
         //$("#panel"+pID+"-sm"+(i+1)+'-heading').text($(currentOptions[i]).text());
@@ -405,25 +406,30 @@ function updateDefaultChart(pID) {
         if (surveyDataTable[currentSurveyIndex][1][qID] == "Response") {
             //nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
             nextSmallMultiplePanel.addClass("sm-barchart");
+            //nextSmallMultiplePanel.addClass(sm_panel_bar_class);
             createBarChart(pID,qID,currentSurveyIndex,"Response");
         }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Multiple Responses") {
             //nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
             nextSmallMultiplePanel.addClass("sm-barchart");
+            //nextSmallMultiplePanel.addClass(sm_panel_bar_class);
             createBarChart(pID,qID,currentSurveyIndex,"Multiple Responses");
         }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Numeric") {
             //nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
             nextSmallMultiplePanel.addClass("sm-barchart-num");
+            //nextSmallMultiplePanel.addClass(sm_panel_bar_class);
             createBarChart(pID,qID,currentSurveyIndex,"Numeric");
         }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Open-Ended Response") {
             nextSmallMultiplePanel.addClass("sm-text");
+            //nextSmallMultiplePanel.addClass(sm_panel_text_class);
             //createWordCloud(pID,qID,currentSurveyIndex);
             createFullResponses(pID,qID,currentSurveyIndex);
         }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Ranking Response") {
             nextSmallMultiplePanel.addClass("sm-barchart-rank");
+            //nextSmallMultiplePanel.addClass(sm_panel_bar_class);
             createBarChart(pID,qID,currentSurveyIndex,"Ranking Response");
         }
         else {
