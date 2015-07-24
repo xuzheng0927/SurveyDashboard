@@ -1,4 +1,4 @@
-function brushAllCharts(sID,qID,response,panel) {
+function brushAllCharts(pID,sID,qID,response,panel) {
 	if ((window.brushSettings[sID] instanceof Object) == false) window.brushSettings[sID] = new Object();
 	window.brushSettings[sID] = {"qID":qID,"response":response};
 
@@ -26,6 +26,8 @@ function brushAllCharts(sID,qID,response,panel) {
 				if (!responseMatch(surveyDataTable[sID][j][qID],response)) continue;
 
 				for (var r=0; r<currentAllTotalRects.length; r++){
+					if (currentAllTotalRects[r].getAttribute("qID") == qID & currentAllTotalRects[r].getAttribute("pID") == pID
+						& currentAllTotalRects[r].getAttribute("response") != response) continue;
 					tempResp = surveyDataTable[sID][j][currentAllTotalRects[r].getAttribute("qID")];
 					if (tempResp instanceof Array == true) {
 						for (rr=0; rr<tempResp.length; rr++) {
@@ -46,20 +48,38 @@ function brushAllCharts(sID,qID,response,panel) {
 				.transition()
 				.attr("width",newWidth)
 				.selectAll("title")
-				.text(brushedNums[r]+' response "'+response+'" in '+qID);
+				.text(function(){
+					if (response instanceof Object) {
+						return brushedNums[r]+' response '+(response.lobound=='-Infinity'?'':'>'+response.lobound+' and')+' <='+response.upbound+' in '+qID;
+					}
+					else return brushedNums[r]+' response "'+response+'" in '+qID;
+				});
 
 				currentAllBrushedRects[r].__data__ = brushedNums[r]
 			}
 		}
-		else if ($(allCharts[i]).hasClass("resp-text")) {
-			var currentAllRespText = $(allCharts[i]).find(".response");
-			for (var r=0; r<currentAllRespText.length; r++) {
-				if (!responseMatch(surveyDataTable[sID][$(currentAllRespText[r]).attr("rID")][qID],response)) {
-					$(currentAllRespText[r]).hide("slow").animate({color:"#337CB7"});
+		else if ($(allCharts[i]).hasClass("sm-text")) {
+			var currentAllRespTextPri = $(allCharts[i]).find(".response-pri");
+			var currentAllRespTextSec = $(allCharts[i]).find(".response-sec");
+			//console.log(currentAllRespText);
+			$(allCharts[i]).find("hr").show("slow");
+			for (var r=0; r<currentAllRespTextPri.length; r++) {
+				if (!responseMatch(surveyDataTable[sID][$(currentAllRespTextPri[r]).attr("rID")][qID],response)) {
+					$(currentAllRespTextPri[r]).hide("slow").animate({color:"#337CB7"});
 				}
 				else {
-					$(currentAllRespText[r]).attr("title",'Response "'+response+'" in '+qID);
-					$(currentAllRespText[r]).show("slow").animate({color:"#337CB7"});
+					$(currentAllRespTextPri[r]).attr("title",'Response "'+response+'" in '+qID);
+					$(currentAllRespTextPri[r]).show("slow").animate({color:"#337CB7"});
+				}
+			}
+
+			for (var r=0; r<currentAllRespTextSec.length; r++) {
+				if (responseMatch(surveyDataTable[sID][$(currentAllRespTextSec[r]).attr("rID")][qID],response)) {
+					$(currentAllRespTextSec[r]).hide("slow");
+				}
+				else {
+					//$(currentAllRespTextSec[r]).attr("title",'Response "'+response+'" in '+qID);
+					$(currentAllRespTextSec[r]).show("slow");
 				}
 			}
 		}
@@ -96,7 +116,12 @@ function brushAllCharts(sID,qID,response,panel) {
 				.transition()
 				.attr("width",newWidth)
 				.selectAll("title")
-				.text(brushedNums[r]+' response "'+response+'" in '+qID);
+				.text(function(){
+					if (response instanceof Object) {
+						return brushedNums[r]+' response '+(response.lobound=='-Infinity'?'':'>'+response.lobound+' and')+' <='+response.upbound+' in '+qID;
+					}
+					else return brushedNums[r]+' response "'+response+'" in '+qID;
+				});
 
 				currentAllBrushedRects[r].__data__ = brushedNums[r]
 			}
@@ -121,10 +146,13 @@ function clearBrushing(sID) {
 				$(currentAllBrushedRects[i]).__data__ = 0;
 			}
 		}
-		else if ($(allCharts[i]).hasClass("resp-text")) {
-			var currentAllRespText = $(allCharts[i]).find(".response");
-			currentAllRespText.show("slow").animate({color:"black"});
-			currentAllRespText.removeAttr("title");
+		else if ($(allCharts[i]).hasClass("sm-text")) {
+			var currentAllRespTextPri = $(allCharts[i]).find(".response-pri");
+			var currentAllRespTextSec = $(allCharts[i]).find(".response-sec");
+			currentAllRespTextPri.show("slow").animate({color:"black"});
+			currentAllRespTextPri.removeAttr("title");
+			currentAllRespTextSec.hide("slow");
+			$(allCharts[i]).find("hr").hide("slow");
 		}
 	}
 
@@ -142,7 +170,12 @@ function responseMatch(responseChk,response) {
 		}
 	}
 	else {
-		if (responseChk == response) matched = true;
+		if (responseChk instanceof Array) {
+			for (var i=0; i<responseChk.length; i++) if (responseChk[i] == response) matched = true;
+		}
+		else{
+			if (responseChk == response) matched = true;
+		}
 	}
 	return matched;
 }

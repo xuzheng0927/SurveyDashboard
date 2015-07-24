@@ -7,6 +7,7 @@
 var surveyDataIndex = new Array();
 var surveyDataTable = new Object();
 var surveyResponseAnswer = new Array();
+var surveyDistinctAnswer = new Array();
 
 /*d3.csv("../data/csc110.csv",function(data){
 
@@ -52,6 +53,7 @@ d3.json("../data/SurveyData.json",function(error,json){
         for (i=1;i<json.length;i++) {
             surveyDataTable[i-1] = json[i];
             surveyResponseAnswer[i-1] = getResponseAnswer(json[i]);
+            surveyDistinctAnswer[i-1] = getDistinctAnswer(surveyResponseAnswer[i-1]);
         }
     }
     //console.log(surveyDataIndex);

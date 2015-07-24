@@ -3,8 +3,9 @@ bar_svg_width_ratio = 0.55;
 bar_offset_ratio = 0.44;
 text_offset_ratio = 0.005;
 //fs_ratio = {"x":0.027,"y":0.247};
-fs_ratio = {"x":0.05,"y":0.457};
+fs_ratio = {"x":0.05,"y":0.6};
 text_cut_thres = 16;
+default_bar_height = 25;
 
 function createBarChart(pID, qID, sID, RespType) {
 	//var currentResponseList = surveyResponseAnswer[sID]["Q"+qID];
@@ -21,6 +22,8 @@ function createBarChart(pID, qID, sID, RespType) {
 	var barHeight = Math.floor(100/currentResponseList.length);
 	var currentContainer = $("#panel"+pID+"-sm"+qID).find(".chart-container");
 	var containerHeight = parseInt(currentContainer.css("height"));
+	currentContainer.css("height",default_bar_height*currentResponseList.length);
+
 	if (RespType != "Ranking Response") {
 		var currentRespHistogram = getHistogramData(currentResponseList, qID, sID, RespType);
 
@@ -73,10 +76,17 @@ function createBarChart(pID, qID, sID, RespType) {
 		//.attr("x",newSVGWidth*0.29)
 		//.attr("datavalue",currentResponseList[i])
 		.attr("x",newSVGWidth*text_offset_ratio)
-		.attr("y",newSVGHeight*0.5)
+		.attr("y",newSVGHeight*0.7)
 		//.attr("cursor","pointer")
-		.attr("font-size",newSVGWidth*fs_ratio.x < newSVGHeight*fs_ratio.y ? newSVGWidth*fs_ratio.x : newSVGHeight*fs_ratio.y)
-		.text(currentResponseList[i].length < text_cut_thres ? currentResponseList[i] : currentResponseList[i].substring(0,text_cut_thres-1)+"...")
+		.attr("font-size",newSVGHeight*fs_ratio.y)
+		.text(currentResponseList[i])
+		.text(function(d){
+			var currentTextWidth = $(this).width();
+			if (currentTextWidth >= newSVGWidth*(bar_offset_ratio-text_offset_ratio)) {
+				return cutText(d,d.length*newSVGWidth*(bar_offset_ratio-text_offset_ratio)/currentTextWidth-1);
+			}
+			else return d;
+		});
 		//.append("title").text(currentResponseList[i]);
 
 		d3.select(newResponseBar.find("svg")[0]).selectAll(".totalRect")
@@ -310,44 +320,51 @@ function resizeRect(pID, qID) {
 		//.transition()
 		//.attr("x",newSVGWidth*0.29)
 		.attr("x",newSVGWidth*text_offset_ratio)
-		.attr("y",newSVGHeight*0.5)
+		.attr("y",newSVGHeight*0.7)
 		//.attr("cursor","pointer")
 		//.attr("text-anchor","end")
-		.attr("font-size",(newSVGWidth*fs_ratio.x < newSVGHeight*fs_ratio.y ? newSVGWidth*fs_ratio.x : newSVGHeight*fs_ratio.y))
-		.text(function(){
-			return $(this).parent().parent().attr("datavalue");
+		.attr("font-size",newSVGHeight*fs_ratio.y)
+		.text(function(d){
+			return d;
+		})
+		.text(function(d){
+			var currentTextWidth = $(this).width();
+			if (currentTextWidth >= newSVGWidth*(bar_offset_ratio-text_offset_ratio)) {
+				return cutText(d,d.length*newSVGWidth*(bar_offset_ratio-text_offset_ratio)/currentTextWidth-1);
+			}
+			else return d;
 		});
 	//$("#panel"+pID+"-sm"+qID+" div div div span").
 
-	var max_text_width;
-	var max_text_length;
-	var allText = $("#panel"+pID+"-sm"+qID+" text");
-	max_text_width = 0;
-	for (var i=0; i<allText.length; i++) {
-		if ($(allText[i]).width() > max_text_width) {
-			max_text_width = $(allText[i]).width();
-			max_text_length = $(allText[i]).text().length;
-		}
-	}
-	//console.log(max_text_width+" "+newSVGWidth * bar_offset_ratio);
-	if (max_text_width >= newSVGWidth * bar_offset_ratio) {
-		var new_text_length_thres = max_text_length/max_text_width*newSVGWidth*bar_offset_ratio;
-		//console.log(max_text_length+" "+new_text_length_thres);
+	// var max_text_width;
+	// var max_text_length;
+	// var allText = $("#panel"+pID+"-sm"+qID+" text");
+	// max_text_width = 0;
+	// for (var i=0; i<allText.length; i++) {
+	// 	if ($(allText[i]).width() > max_text_width) {
+	// 		max_text_width = $(allText[i]).width();
+	// 		max_text_length = $(allText[i]).text().length;
+	// 	}
+	// }
+	// //console.log(max_text_width+" "+newSVGWidth * bar_offset_ratio);
+	// if (max_text_width >= newSVGWidth * bar_offset_ratio) {
+	// 	var new_text_length_thres = max_text_length/max_text_width*newSVGWidth*bar_offset_ratio;
+	// 	//console.log(max_text_length+" "+new_text_length_thres);
 
-		d3.select($("#panel"+pID+"-sm"+qID)[0]).selectAll("text")
-		//.transition()
-		.text(function(d){
-			return cutText($(this).parent().parent().attr("datavalue"),new_text_length_thres);
-		})
-		// .append("title").text(function(d){
-		// 	return $(this).parent().parent().attr("datavalue");
-		// });
-	}
+	// 	d3.select($("#panel"+pID+"-sm"+qID)[0]).selectAll("text")
+	// 	//.transition()
+	// 	.text(function(d){
+	// 		return cutText($(this).parent().parent().attr("datavalue"),new_text_length_thres);
+	// 	})
+	// 	// .append("title").text(function(d){
+	// 	// 	return $(this).parent().parent().attr("datavalue");
+	// 	// });
+	// }
 
 	//for (var i=0; i<allText.length; i++) $(allText[i]).append("<title>"+$(allText[i]).parent().parent().attr("datavalue")+"</title>");
 
 	d3.select($("#panel"+pID+"-sm"+qID)[0]).selectAll("rect")
-		.transition()
+		//.transition()
 		.attr("x",newSVGWidth*bar_offset_ratio)
 		// .attr("y",newSVGHeight*0.1)
 		.attr("width",function(d,i) {

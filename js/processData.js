@@ -94,9 +94,37 @@ function getResponseAnswer(json) {
 				responseAnswerList[q][i] = minInArray + (maxInArray - minInArray) / binNum * (i+1);
 			}
 		}
+		else if (json[1][q] == "Ranking Response") {
+			responseAnswerList[q] = new Array();
+			for (var i=2; i < json.length; i++) {
+				if (json[i][q] instanceof Array) {
+					responseAnswerList[q] = json[i][q];
+					break;
+				}
+			}
+		}
 		else {
 
 		}
 	}
 	return responseAnswerList;
+}
+
+function getDistinctAnswer(responseAnswerList) {
+	var distinctRespList = new Array();
+	var isEqual;
+	for (q in responseAnswerList) {
+		if (responseAnswerList[q] == null) continue;
+		if (distinctRespList.length == 0) distinctRespList[0] = responseAnswerList[q];
+		else {
+			isEqual = true;
+			for (var i=0; i<distinctRespList.length; i++) {
+				if (equalArrays(responseAnswerList[q],distinctRespList[i])) isEqual = false;
+			}
+			if (isEqual == true) {
+				distinctRespList[distinctRespList.length] = responseAnswerList[q];
+			}
+		}
+	}
+	return distinctRespList;
 }
