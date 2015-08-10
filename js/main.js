@@ -60,5 +60,6 @@ d3.json("../data/SurveyData.json",function(error,json){
     //console.log(surveyDataTable);
     //console.log(surveyResponseAnswer);
     addNewPanel();
+    addNewQueryChart();
 });
 

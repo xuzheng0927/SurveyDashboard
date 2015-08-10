@@ -21,4 +21,6 @@ function createFullResponses(pID, qID, sID) {
             currentContainer.append("<div class='response-sec' style='color:#AAAAAA; display:none' rID="+i+"><p>"+newText+"</p><br></div>");
         }
     }
+
+    adjustSMPanelSize(qID);
 }

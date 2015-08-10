@@ -1,6 +1,8 @@
-function brushAllCharts(pID,sID,qID,response,panel) {
+function brushAllCharts(pID,sID,qID,response,panel,clickedbar) {
 	if ((window.brushSettings[sID] instanceof Object) == false) window.brushSettings[sID] = new Object();
-	window.brushSettings[sID] = {"qID":qID,"response":response};
+	window.brushSettings[sID] = {"qID":qID,"response":response,"clickedbar":clickedbar};
+	// if (window.brushSettings[sID]["clickedbar"] instanceof Object) clickedbar = window.brushSettings[sID]["clickedbar"];
+	// else window.brushSettings[sID]["clickedbar"] = clickedbar;
 
 	if (panel instanceof Object) {
 		var allCharts = panel.find(".chart");
@@ -42,11 +44,29 @@ function brushAllCharts(pID,sID,qID,response,panel) {
 			//console.log(brushedNums);
 
 			for (var r=0; r<currentAllBrushedRects.length; r++){
+				if (currentAllTotalRects[r].getAttribute("onclick") == clickedbar.getAttribute("onclick")) clickedbar = currentAllTotalRects[r];
 				newWidth = $(currentAllTotalRects[r]).attr("width") / currentAllTotalRects[r].__data__ * brushedNums[r];
 				d3.select(currentAllBrushedRects[r])
 				.attr("brushed","true")
-				.transition()
+				.transition().duration(500)
 				.attr("width",newWidth)
+				.attr("stroke-width",function(){
+					//console.log($(this).siblings(".totalRect").attr("qID"));
+					// if ($(this).parent().parent().attr("sID") == sID & $(this).parent().parent().attr("title") == response
+					// 	& $(this).siblings(".totalRect")[0].getAttribute("qID") == qID) return 2;
+					if (currentAllTotalRects[r] == clickedbar) return 2;
+					else return 1;
+				})
+				.attr("stroke",function(){
+					//console.log($(this).siblings(".totalRect").attr("qID"));
+					if (currentAllTotalRects[r] == clickedbar) return "cyan";
+					else return "black";
+				})
+				.attr("fill-opacity",function(){
+					//console.log($(this).siblings(".totalRect").attr("qID"));
+					if (currentAllTotalRects[r] == clickedbar) return 0.7;
+					else return 1;
+				})
 				.selectAll("title")
 				.text(function(){
 					if (response instanceof Object) {
@@ -113,8 +133,20 @@ function brushAllCharts(pID,sID,qID,response,panel) {
 				newWidth = $(currentAllTotalRects[r]).attr("width") / currentAllTotalRects[r].__data__ * brushedNums[r];
 				d3.select(currentAllBrushedRects[r])
 				.attr("brushed","true")
-				.transition()
+				.transition().duration(500)
 				.attr("width",newWidth)
+				.attr("stroke-width",function(){
+					if (currentAllTotalRects[r] == clickedbar) return 2;
+					else return 1;
+				})
+				.attr("stroke",function(){
+					if (currentAllTotalRects[r] == clickedbar) return "cyan";
+					else return "black";
+				})
+				.attr("fill-opacity",function(){
+					if (currentAllTotalRects[r] == clickedbar) return 0.7;
+					else return 1;
+				})
 				.selectAll("title")
 				.text(function(){
 					if (response instanceof Object) {
@@ -140,8 +172,10 @@ function clearBrushing(sID) {
 			for (var j=0; j<currentAllBrushedRects.length; j++) {
 				d3.select(currentAllBrushedRects[j])
 				.attr("brushed","false")
-				.transition()
+				.transition().duration(500)
 				.attr("width",0)
+				.attr("stroke","black")
+				.attr("stroke-width",1)
 
 				$(currentAllBrushedRects[i]).__data__ = 0;
 			}

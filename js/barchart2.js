@@ -7,22 +7,30 @@ fs_ratio = {"x":0.05,"y":0.6};
 text_cut_thres = 16;
 default_bar_height = 25;
 
-function createBarChart(pID, qID, sID, RespType) {
+function createBarChart(pID, qID, sID, RespType, ChartType) {
 	//var currentResponseList = surveyResponseAnswer[sID]["Q"+qID];
 	//console.log(sID+" "+qID);
 
 	var currentResponseList = surveyResponseAnswer[sID][qID];
-	var currentSMPanel = $("#panel"+pID+"-sm"+qID);
-	for (var i=0; i<surveyDistinctAnswer[sID].length; i++) {
-		if (equalArrays(currentResponseList,surveyDistinctAnswer[sID][i])) {
-			currentSMPanel.attr("daID",i);
-		}
-	}
-
 	var barHeight = Math.floor(100/currentResponseList.length);
-	var currentContainer = $("#panel"+pID+"-sm"+qID).find(".chart-container");
-	var containerHeight = parseInt(currentContainer.css("height"));
-	currentContainer.css("height",default_bar_height*currentResponseList.length);
+	//var currentSMPanel = $("#panel"+pID+"-sm"+qID);
+	if (ChartType == "query") {
+		var currentContainer = $("#query-chart"+pID+" .chart-container");
+		currentContainer.css("height",default_bar_height*currentResponseList.length);
+	}
+	else {
+		var currentSMPanel = $(".sm-panel[qID='"+qID+"']");
+		for (var i=0; i<surveyDistinctAnswer[sID].length; i++) {
+			if (equalArrays(currentResponseList,surveyDistinctAnswer[sID][i])) {
+				currentSMPanel.attr("daID",i);
+			}
+		}
+		var currentContainer = $("#panel"+pID+"-sm"+qID).find(".chart-container");
+		currentContainer.css("height",default_bar_height*currentResponseList.length);
+		adjustSMPanelSize(qID);
+	}
+	// var containerHeight = parseInt(currentContainer.css("height"));
+	
 
 	if (RespType != "Ranking Response") {
 		var currentRespHistogram = getHistogramData(currentResponseList, qID, sID, RespType);
@@ -31,7 +39,7 @@ function createBarChart(pID, qID, sID, RespType) {
 			var numericResponseList = currentResponseList;
 			currentResponseList = transformRespList(currentResponseList);
 		}
-		else {
+		else if (ChartType != "query"){
 			if ($("[daID='"+currentSMPanel.attr("daID")+"']").length == 1) {
 				sortValues(currentResponseList, currentRespHistogram, "descending");
 				surveyDistinctAnswer[sID][currentSMPanel.attr("daID")] = currentResponseList;
@@ -119,7 +127,8 @@ function createBarChart(pID, qID, sID, RespType) {
 				else return newSVGWidth*d/Math.max.apply(null,currentRespHistogram)*bar_svg_width_ratio;
 			}
 		})
-		.attr("height", newSVGHeight*bar_svg_height_ratio < containerHeight/5 ? newSVGHeight*bar_svg_height_ratio : containerHeight/5)
+		// .attr("height", newSVGHeight*bar_svg_height_ratio < containerHeight/5 ? newSVGHeight*bar_svg_height_ratio : containerHeight/5)
+		.attr("height", newSVGHeight*bar_svg_height_ratio)
 		.attr("y",function(d){
 			return (newSVGHeight - $(this).attr("height")) / 2;
 		})
@@ -131,9 +140,9 @@ function createBarChart(pID, qID, sID, RespType) {
 		//.attr("onclick",'brushAllCharts('+sID+',"'+qID+'","'+currentResponseList[i]+'")')
 		.attr("onclick",function(d){
 			if (RespType == "Numeric") {
-				return 'brushAllCharts('+pID+','+sID+',"'+qID+'",{"lobound":'+this.getAttribute("lobound")+',"upbound":'+this.getAttribute("upbound")+'});';
+				return 'brushAllCharts('+pID+','+sID+',"'+qID+'",{"lobound":'+this.getAttribute("lobound")+',"upbound":'+this.getAttribute("upbound")+'},0,this);';
 			}
-			else return 'brushAllCharts('+pID+','+sID+',"'+qID+'","'+currentResponseList[i]+'")';
+			else if (RespType != "Ranking Response") return 'brushAllCharts('+pID+','+sID+',"'+qID+'","'+currentResponseList[i]+'",0,this);';
 		})
 		.append("title").text(function(d){
 			if (RespType == "Ranking Response") {
@@ -151,7 +160,8 @@ function createBarChart(pID, qID, sID, RespType) {
 		.attr("brushed","false")
 		.attr("x",newSVGWidth*bar_offset_ratio)
 		.attr("width",0)
-		.attr("height", newSVGHeight*bar_svg_height_ratio < containerHeight/5 ? newSVGHeight*bar_svg_height_ratio : containerHeight/5)
+		// .attr("height", newSVGHeight*bar_svg_height_ratio < containerHeight/5 ? newSVGHeight*bar_svg_height_ratio : containerHeight/5)
+		.attr("height", newSVGHeight*bar_svg_height_ratio)
 		.attr("y",function(d){
 			return (newSVGHeight - $(this).attr("height")) / 2;
 		})
@@ -166,6 +176,8 @@ function createBarChart(pID, qID, sID, RespType) {
 	currentContainer.sortable({
 		//items: "text",
 		//cancel: "rect"
+		//helper: 'original',
+		containment: 'parent',
 		start: function(event, ui) {
 			ui.item.attr("oldIndex",ui.item.index());
 		},
@@ -178,6 +190,7 @@ function createBarChart(pID, qID, sID, RespType) {
 			}
 		}
 	});
+
 	/*d3.select(currentSVG[0]).selectAll("text")
 	.data(currentResponseList)
 	.enter()
@@ -293,7 +306,7 @@ function getAverageRank(responseList, qID, sID) {
 	return rankData;
 }
 
-function resizeRect(pID, qID) {
+function resizeRect(pID, qID, ChartType) {
 	// var currentRects = $("#panel"+pID+"-sm"+qID+" rect");
 	// var newHeightRatio = (parseInt(size["height"])-69) / (parseInt(originalSize["height"])-69);
 	// var newWidthRatio =  (parseInt(size["width"])-17) / (parseInt(originalSize["width"])-17);
@@ -310,13 +323,16 @@ function resizeRect(pID, qID) {
 
 	//var currentResponseList = surveyResponseAnswer[sID]["Q"+qID];
 	//var currentRespHistogram = getHistogramData(currentResponseList, qID, sID);
-	var newSVGHeight = parseInt($("#panel"+pID+"-sm"+qID+" svg").first().css("height"));
-	var newSVGWidth = parseInt($("#panel"+pID+"-sm"+qID+" svg").first().css("width"));
-	var containerHeight = parseInt($("#panel"+pID+"-sm"+qID+" .chart-container").css("width"));
-	//console.log(newSVGHeight*0.7+" "+containerHeight/5);
-	var maxValue = $("#panel"+pID+"-sm"+qID+" svg").attr("max");
+	if (ChartType == "query") var find_in_tab = "#query-area";
+	else var find_in_tab = "#overview-area";
 
-	d3.select($("#panel"+pID+"-sm"+qID)[0]).selectAll("text")
+	var newSVGHeight = parseInt($(find_in_tab+" [qID='"+qID+"'] svg").first().css("height"));
+	var newSVGWidth = parseInt($(find_in_tab+" [qID='"+qID+"'] svg").first().css("width"));
+	var containerHeight = parseInt($(find_in_tab+" [qID='"+qID+"'] .chart-container").css("width"));
+	var maxValue = $(find_in_tab+" [qID='"+qID+"'] svg").attr("max");
+
+
+	d3.select($(find_in_tab+" [qID='"+qID+"']")[0]).selectAll("text")
 		//.transition()
 		//.attr("x",newSVGWidth*0.29)
 		.attr("x",newSVGWidth*text_offset_ratio)
@@ -334,6 +350,7 @@ function resizeRect(pID, qID) {
 			}
 			else return d;
 		});
+
 	//$("#panel"+pID+"-sm"+qID+" div div div span").
 
 	// var max_text_width;
@@ -363,25 +380,38 @@ function resizeRect(pID, qID) {
 
 	//for (var i=0; i<allText.length; i++) $(allText[i]).append("<title>"+$(allText[i]).parent().parent().attr("datavalue")+"</title>");
 
-	d3.select($("#panel"+pID+"-sm"+qID)[0]).selectAll("rect")
+	d3.select($(find_in_tab+" [qID='"+qID+"']")[0]).selectAll("rect")
 		//.transition()
 		.attr("x",newSVGWidth*bar_offset_ratio)
 		// .attr("y",newSVGHeight*0.1)
 		.attr("width",function(d,i) {
+			//console.log(d);
 			if (d == 0){
 				if ($(this).attr("class") == "totalRect") return newSVGWidth*0.01;
 				else return 0;
 			}
 			else{
-				if ($(this).attr("brushed") == "false") return 0;
-				else return newSVGWidth*d/maxValue*bar_svg_width_ratio;
+				if (ChartType == "query") {
+					//console.log(newSVGWidth+" "+d+" "+maxValue+" "+bar_svg_width_ratio);
+					if ($(this).attr("class") == "totalRect") {
+						//console.log(this);
+						//return newSVGWidth*d/maxValue*bar_svg_width_ratio;
+						return parseInt($(this).parent().css("width"))*d/maxValue*bar_svg_width_ratio;
+					}
+					else return 0;
+				}
+				else {
+					if ($(this).attr("brushed") == "false") return 0;
+					else return newSVGWidth*d/maxValue*bar_svg_width_ratio;
+				}
 			}
 		})
 		//.attr("height", newSVGHeight*0.70)
-		.attr("height", newSVGHeight*bar_svg_height_ratio < containerHeight/5 ? newSVGHeight*bar_svg_height_ratio : containerHeight/5)
+		.attr("height", newSVGHeight*bar_svg_height_ratio)
 		.attr("y",function(d){
 			return (newSVGHeight - $(this).attr("height")) / 2;
 		});
+		return
 		//.attr("fill", "#888888");
 
 }

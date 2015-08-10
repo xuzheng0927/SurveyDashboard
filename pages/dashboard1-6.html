@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Survey Dashboard</title>
+    <title>Survey Data Dashboard</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -27,8 +27,11 @@
     <!-- D3 charts styles -->
     <link rel="stylesheet" type="text/css" href="../dist/css/bootstrap-select.css">
     <!-- <link rel="stylesheet" type="text/css" href="../css/splom.css"> -->
-    <link rel="stylesheet" type="text/css" href="../css/query-heatmap.css">
-
+    <link rel="stylesheet" type="text/css" href="../css/heatmap.css">
+    <link rel="stylesheet" type="text/css" href="../css/histogram.css">
+    <link rel="stylesheet" type="text/css" href="../css/parallelCoordinates.css">
+    <link rel="stylesheet" type="text/css" href="../css/correlationMatrix.css">
+    <link rel="stylesheet" type="text/css" href="../css/timelines.css">
     <link rel="stylesheet" href="../bower_components/jquery-ui/jquery-ui.css">
 
     <!--Date Picker Dependencies-->
@@ -54,7 +57,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand">Survey Dashboard</a>
+                <a class="navbar-brand">Survey Data Dashboard</a>
             </div>
             <!-- /.navbar-header -->
 
@@ -80,7 +83,17 @@
             <!-- /.navbar-top-links -->
         </nav>
 
-        <div style="padding:20px 5px 5px 5px">
+        <div style="padding:20px">
+        <div class="row" style="padding:5">
+            <div class="col-lg-12" style="margin-bottom:5px;padding-left:15px">
+                <p>  </p>
+                <button href="#BOTTOM" type="button" class="btn btn-primary" id="btnAdd" style="margin-left:5px">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    Add a New Chart
+                </button>
+            </div>
+            <!-- button to add a new chart -->
+        </div>
 
         <div class="row" id="primary_panel">
             <!-- primary panel row -->
@@ -125,18 +138,19 @@
     <!-- General functions -->
     <script type="text/javascript" src="../js/general.js"></script>
     <!-- d3 js files -->
+    <script type="text/javascript" src="../js/heatmap.js"></script>
+    <script type="text/javascript" src="../js/histogram.js"></script>
+    <script type="text/javascript" src="../js/parallelCoordinates.js"></script>
+    <script type="text/javascript" src="../js/correlationMatrix.js"></script>
+    <script type="text/javascript" src="../js/timelines.js"></script>
     <script type="text/javascript" src="../js/barchart2.js"></script>
     <script type="text/javascript" src="../js/wordcloud.js"></script>
     <script type="text/javascript" src="../js/fullresponses.js"></script>
     <script type="text/javascript" src="../js/brushing.js"></script>
-    <script type="text/javascript" src="../js/querybarchart.js"></script>
-    <script type="text/javascript" src="../js/queryheatmap.js"></script>
-    <script type="text/javascript" src="../js/resize.js"></script>
-    <script type="text/javascript" src="../js/empty.js"></script>
 
     <!-- Framework code -->
-    <script type="text/javascript" src="../js/panelsDOM7.js"></script>
-    <script type="text/javascript" src="../js/panels7.js"></script>
+    <script type="text/javascript" src="../js/panelsDOM6.js"></script>
+    <script type="text/javascript" src="../js/panels6.js"></script>
     <script type="text/javascript" src="../js/settings.js"></script>
     <script type="text/javascript" src="../js/processData.js"></script>
     <script type="text/javascript" src="../js/main.js"></script>
