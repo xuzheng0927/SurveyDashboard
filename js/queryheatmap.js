@@ -1,13 +1,13 @@
-query_heatmap_class = "col-lg-11 col-md-11 col-sm-11 col-xs-11";
+query_heatmap_class = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
 q1_row_percent = 10;
 q2_col_percent = 10;
 q2_resp_percent = 20;
-cell_height = 50;
+cell_height = 40;
 
 function createQueryHeatmap(qcID){
 	$("#query-chart"+qcID+" .chart-container").remove();
 	var sID = window.sID;
-	var qID = $("#query-chart"+qcID+" .question-selector").val();
+	var qID = $("#query-chart"+qcID+" .panel .question-selector").val();
 
 	if (qID.length == 2) {
 		var RespType1 = surveyDataTable[sID][1][qID[0]];
@@ -15,8 +15,8 @@ function createQueryHeatmap(qcID){
 
 		if (!containedInArray("Numeric",[RespType1,RespType2]) & !containedInArray("Ranking Response",[RespType1,RespType2]) 
 			& !containedInArray("Open-Ended Response",[RespType1,RespType2])) {
-			$("#query-chart"+qcID).append($('<div class="chart-container '+query_heatmap_class+'" style="margin:20px;" qID1='+qID[0]+' qID2='+qID[1]+'></div>'));
-			drawQueryHeatmap(qcID);
+			$("#query-chart"+qcID+" .panel").append($('<div class="chart-container '+query_heatmap_class+'" style="margin:0px;width:100%;height:100%" qID1='+qID[0]+' qID2='+qID[1]+'></div>'));
+			drawQueryHeatmap(qcID, qID[0], qID[1]);
 			$("#query-chart"+qcID+" .chart-container").addClass("heatmap");
 		}
 		else createQueryEmpty(qcID);
@@ -24,11 +24,22 @@ function createQueryHeatmap(qcID){
 	}
 }
 
-function drawQueryHeatmap(qcID){
+function drawQueryHeatmap(qcID, qID1, qID2){
 	var currentContainer = $("#query-chart"+qcID+" .chart-container");
-	var respNum1 = surveyResponseAnswer[window.sID][currentContainer.attr("qID1")].length;
-	var respNum2 = surveyResponseAnswer[window.sID][currentContainer.attr("qID2")].length;
-	var currentConWidth = parseInt(currentContainer.css("width"));
+	var respNum1 = surveyResponseAnswer[window.sID][qID1].length;
+	var respNum2 = surveyResponseAnswer[window.sID][qID2].length;
+	var daID;
+	currentContainer.css("height",(respNum2+2)*cell_height);
+	for (var i=0; i<surveyDistinctAnswer[window.sID].length; i++) {
+		if (equalArrays(surveyDistinctAnswer[window.sID][i],surveyResponseAnswer[window.sID][qID1])) {
+			daID1 = i;
+			//console.log(daID);
+		}
+		if (equalArrays(surveyDistinctAnswer[window.sID][i],surveyResponseAnswer[window.sID][qID2])) {
+			daID2 = i;
+		}
+	}
+	//var currentConWidth = parseInt(currentContainer.css("width"));
 	//currentContainer.css("width",currentContainer.css("width"))
 
 	// var q1Row = $('<div style="width:'+currentConWidth+'"></div>');
@@ -70,31 +81,44 @@ function drawQueryHeatmap(qcID){
 	// q2Resp.children().addClass("query-heatmap-cell");
 	// q2Col.children().last().append(q2Resp);
 
-	currentContainer.append(newQueryHeatMapDOM(qcID,window.sID,currentContainer.attr("qID1"),currentContainer.attr("qID2")));
-	addQ1Wording(qcID,window.sID,currentContainer.attr("qID1"));
-	addQ2Wording(qcID,window.sID,currentContainer.attr("qID2"));
-	addQ1Resp(qcID,window.sID,currentContainer.attr("qID1"));
-	addQ2Resp(qcID,window.sID,currentContainer.attr("qID2"),currentContainer.attr("qID1"));
-	addHeatmapCells(qcID,window.sID,currentContainer.attr("qID1"),currentContainer.attr("qID2"));
+	currentContainer.append(newQueryHeatMapDOM(qcID,window.sID,qID1,qID2,daID1,daID2));
+	addQ1Wording(qcID,window.sID,qID1);
+	addQ2Wording(qcID,window.sID,qID2);
+	addQ1Resp(qcID,window.sID,qID1,daID1);
+	addQ2Resp(qcID,window.sID,qID2,qID1,daID2);
+	addHeatmapCells(qcID,window.sID,qID1,qID2);
+
+	var quest_height = parseInt($("#query-chart"+qcID+" .question-area").css("height"));
+	var con_height = parseInt($("#query-chart"+qcID+" .chart-container").css("height"));
+	$("#query-chart"+qcID).css("height",quest_height+con_height+20);
+	$("#query-chart"+qcID+" .panel").css("height","100%");
 }
 
-function newQueryHeatMapDOM (qcID, sID, qID1, qID2) {
+function newQueryHeatMapDOM (qcID, sID, qID1, qID2, daID1, daID2) {
 	var currentContainer = $("#query-chart"+qcID+" .chart-container");
 	var respNum1 = surveyResponseAnswer[window.sID][currentContainer.attr("qID1")].length;
 	var respNum2 = surveyResponseAnswer[window.sID][currentContainer.attr("qID2")].length;
 	var currentConWidth = parseInt(currentContainer.css("width"));
+	// var daID;
 
-	var DOMString = '<div style="width:'+currentConWidth+'">';	// open 1 (main body)
+	// for (var i=0; i<surveyDistinctAnswer[sID].length; i++) {
+	// 	if (equalArrays(surveyDistinctAnswer[sID][i],surveyResponseAnswer[sID][qID1])) {
+	// 		daID = i;
+	// 		break;
+	// 	}
+	// }
+
+	var DOMString = '<div style="width:'+currentConWidth+';height:100%">';	// open 1 (main body)
 
 	// Left column, question 2 wording and question 2 responses
 	DOMString += '<div style="width:'+(q2_col_percent+q2_resp_percent)+'%;height:100%;float:left">'; // open 2 (left column)
-	DOMString += '<div style="width:100%;height:'+cell_height+'px;float:left"></div>';	// open 3, close 3 (empty area)
-	DOMString += '<div style="width:100%;height:'+((respNum2+1)*cell_height)+'px;float:left">'; // open 4 (content area)
+	DOMString += '<div style="width:100%;height:'+(100/(respNum2+2))+'%;float:left"></div>';	// open 3, close 3 (empty area)
+	DOMString += '<div style="width:100%;height:'+(100-100/(respNum2+2))+'%;float:left">'; // open 4 (content area)
 	DOMString += '<div style="width:'+(q2_col_percent/(q2_resp_percent+q2_col_percent)*100)+'%;height:100%;float:left" >'; // open 13 (q2 wording col)
 	DOMString += '<svg style="width:100%;height:100%" id="qc'+qcID+'-q2wording"></svg></div>'; // open 14 close 14,13
 	DOMString += '<div style="width:'+(q2_resp_percent/(q2_resp_percent+q2_col_percent)*100)+'%;height:100%;float:left">'; // open 15 (q2 resp col)
 	DOMString += '<div style="width:100%;height:'+(100/(respNum2+1))+'%"><svg style="width:100%;height:100%"></svg></div>'; // open 16 close 16 empty cell
-	DOMString += '<div style="width:100%;height:'+(100*respNum2/(respNum2+1))+'%" id="qc'+qcID+'-qID2'+qID2+'-col">'; // open 17 div for all q2 resps
+	DOMString += '<div style="width:100%;height:'+(100*respNum2/(respNum2+1))+'%" id="qc'+qcID+'-qID2'+qID2+'-col" class="heatmap-q2-col" daID='+daID2+'>'; // open 17 div for all q2 resps
 	for (var i=0; i<respNum2; i++){
 		DOMString += '<div style="width:100%;height:'+(100/respNum2)+'%">'; // open 5 (q2 resp)
 		DOMString += '<svg id="qc'+qcID+'-qID2'+qID2+'-resp'+i+'" style="width:100%;height:100%"></svg></div>'; // open 6, close 6,5
@@ -103,14 +127,15 @@ function newQueryHeatMapDOM (qcID, sID, qID1, qID2) {
 
 	// Right column, quetion 1 wording, question 1 responese
 	DOMString += '<div style="width:'+(100 - q2_col_percent - q2_resp_percent)+'%;height:100%;float:left">'; // open 7 (right column)
-	DOMString += '<div style="height:'+cell_height+'px">'; // open 8 (q1 wording)
+	DOMString += '<div style="height:'+(100/(respNum2+2))+'%">'; // open 8 (q1 wording)
 	DOMString += '<svg style="width:100%;height:100%;padding:0;margin:0" id="qc'+qcID+'-q1wording"></svg></div>'; // open 9, close 9,8 (q1 wording svg)
-	DOMString += '<div style="width:100%;height:'+cell_height+'px;padding:0" id="qc'+qcID+'-qID1'+qID1+'-row" class="col-lg-12">'; // open 10 (q1 resp row)
+	DOMString += '<div style="width:100%;height:'+(100/(respNum2+2))+'%;padding:0" id="qc'+qcID+'-qID1'+qID1+'-row" class="col-lg-12" daID='+daID1+'>'; // open 10 (q1 resp row)
 	for (var i=0; i<respNum1; i++) {
 		DOMString += '<div style="width:'+(100/respNum1)+'%;height:100%;float:left;padding:0" class="col-lg-2">'; // oepn 11 (q1 resp cell)
 		DOMString += '<svg id="qc'+qcID+'-qID1'+qID1+'-resp'+i+'" style="width:100%;height:100%"></svg></div>'; // open 12, close 12,11
 	}
-	DOMString += '</div></div>'; // close 7,1
+	DOMString += '</div></div></div>'; // close 7,1
+	//DOMString += '</div>';
 
 	return $(DOMString);
 };
@@ -182,14 +207,21 @@ function addQ2Wording (qcID, sID, qID2) {
 	.append("title").text(function(d){return d});
 }
 
-function addQ1Resp (qcID, sID, qID1) {
+function addQ1Resp (qcID, sID, qID1, daID) {
 	var respSVGs = $("#qc"+qcID+"-qID1"+qID1+"-row svg");
+	respSVGs.parent().parent().attr("daID",daID);
+	// for (var i=0; i<surveyDistinctAnswer[sID].length; i++) {
+	// 	if (equalArrays(surveyDistinctAnswer[sID][i],surveyResponseAnswer[sID][qID1])) {
+	// 		respSVGs.parent().attr("daID",i);
+	// 	}
+	// }
 	//console.log(respSVGs);
 	var SVGWidth, SVGHeight;
 
 	for (var i=0; i<respSVGs.length; i++) {
 		SVGWidth = parseInt($(respSVGs[i]).css("width"));
 		SVGHeight = parseInt($(respSVGs[i]).css("height"));
+		$(respSVGs[i]).parent().attr("datavalue",surveyResponseAnswer[sID][qID1][i]);
 		//console.log(SVGHeight+" "+SVGWidth);
 
 		d3.select(respSVGs[i]).selectAll(".respQ1Rect")
@@ -224,19 +256,35 @@ function addQ1Resp (qcID, sID, qID1) {
 		containment: 'parent',
 		cancel: '.heatmapCell',
 		axis: 'x',
-		start: function(){
-			var cell_width = parseInt($(this).children().css("width"));
-			$(".ui-sortable-placeholder").css("width",cell_width-1);
+		start: function(event,ui){
+			var new_cell_width = parseInt($(this).children().css("width"));
+			//var new_cell_height = parseInt($(this).find(".respQ2Rect").css("height"));
+			var new_cell_height = ui.item.css("height");
+			$(".ui-sortable-placeholder").css("width",new_cell_width-1);
+			$(".ui-sortable-placeholder").css("height",new_cell_height);
+			ui.item.attr("oldIndex",ui.item.index());
+		},
+		stop: function(event,ui) {
+			if (ui.item.attr("oldIndex") == ui.item.index()) return;
+			syncRespOrder(ui.item);
+
+			var allMatchedChart = $("#query-area .stacked [daID='"+$(this).attr("daID")+"']");
+			//console.log(allMatchedChart);
+			for (var i=0; i<allMatchedChart.length; i++) {
+				syncStackedBars($(allMatchedChart[i]).children().attr("qcID"));
+			}
+			//syncStackedBars(qcID);
 		}
 	});
 }
 
-function addQ2Resp (qcID, sID, qID2, qID1) {
+function addQ2Resp (qcID, sID, qID2, qID1, daID) {
 	var respSVGs = $("#qc"+qcID+"-qID2"+qID2+"-col svg");
 	var blankCell = $("#qc"+qcID+"-qID2"+qID2+"-col").siblings().find("svg");
 	var SVGWidth, SVGHeight;
 	SVGWidth = parseInt($(respSVGs[0]).css("width"));
 	SVGHeight = parseInt($(respSVGs[0]).css("height"));
+	respSVGs.parent().parent().attr("daID",daID);
 	
 	d3.select(blankCell[0]).selectAll("rect")
 	.data([0])
@@ -253,6 +301,8 @@ function addQ2Resp (qcID, sID, qID2, qID1) {
 	for (var i=0; i<respSVGs.length; i++) {
 		SVGWidth = parseInt($(respSVGs[i]).css("width"));
 		SVGHeight = parseInt($(respSVGs[i]).css("height"));
+		$(respSVGs[i]).parent().attr("qcID",qcID);
+		$(respSVGs[i]).parent().attr("datavalue",surveyResponseAnswer[sID][qID2][i]);
 		//console.log(SVGHeight+" "+SVGWidth);
 
 		d3.select(respSVGs[i]).selectAll(".respQ2Rect")
@@ -287,14 +337,30 @@ function addQ2Resp (qcID, sID, qID2, qID1) {
 	$("#qc"+qcID+"-qID2"+qID2+"-col").sortable({
 		containment: 'parent',
 		axis: 'y',
-		start: function(){
-			$(".ui-sortable-placeholder").css("height",cell_height);
+		start: function(event,ui){
+			//$(".ui-sortable-placeholder").css("height",cell_height);
+			//var new_cell_width = parseInt($(this).children().css("width"));
+			var new_cell_height = ui.item.css("height");
+			console.log(new_cell_height);
+			//$(".ui-sortable-placeholder").css("width",new_cell_width-1);
+			$(".ui-sortable-placeholder").css("height",100/respSVGs.length+"%");
+			ui.item.attr("oldIndex",ui.item.index());
+
 			$(this).attr("sorted","true");
 			
 		},
-		stop: function(){
+		stop: function(event,ui){
 			appendCellsToQ1(qcID, qID1, qID2);
 			$(this).attr("sorted","false");
+
+			if (ui.item.attr("oldIndex") == ui.item.index()) return;
+			syncRespOrder(ui.item);
+
+			var allMatchedChart = $("#query-area .stacked [daID='"+$(this).attr("daID")+"']");
+			//console.log(allMatchedChart);
+			for (var i=0; i<allMatchedChart.length; i++) {
+				syncStackedBars($(allMatchedChart[i]).children().attr("qcID"));
+			}
 		}
 	});
 
@@ -421,6 +487,7 @@ function appendCellsToQ1 (qcID, qID1, qID2) {
 	var respQ1SVGs = $("#qc"+qcID+"-qID1"+qID1+"-row svg");
 	var respQ2SVGs = $("#qc"+qcID+"-qID2"+qID2+"-col svg");
 	var cell_width = parseInt($(respQ2SVGs.find(".heatmapCell")[0]).attr("width"));
+	var cell_height_temp = parseInt($(respQ2SVGs.find(".heatmapCell")[0]).attr("height"));
 	var tempRects;
 
 	oldRespQ2Width = parseInt(respQ2SVGs.css("width"));
@@ -432,19 +499,32 @@ function appendCellsToQ1 (qcID, qID1, qID2) {
 		for (var i1 = 0; i1 < respQ1SVGs.length; i1++) {
 			$(tempRects[i1]).appendTo($(respQ1SVGs[i1]));
 			$(tempRects[i1]).attr("x",0);
-			$(tempRects[i1]).attr("y",(i2 + 1) * cell_height);
+			$(tempRects[i1]).attr("y",(i2 + 1) * cell_height_temp);
 		}
 	}
 }
 
 function fitWordingLength(text, svg, margin, direction) {
 	var maxSize = ( direction == 'vertical' ? svg.height() : svg.width() );
+	var newText
 	//var textSize = ( direction == 'vertical' ? text.height() : text.width() );
 	if (text.width() >= maxSize - 2 * margin) {
 		var text_length = text[0].__data__.length;
 		//var cut_ratio = (svg.width()-2*margin)/text.width();
 		//console.log(cut_ratio);
-		return text[0].__data__.substring(0,Math.floor(text[0].__data__.length*(maxSize-2*margin)/text.width()-2)) + "...";
+		newText = text[0].__data__.substring(0,Math.floor(text[0].__data__.length*(maxSize-2*margin)/text.width()-2)) + "...";
 	}
-	else return text[0].__data__;
+	else newText = text[0].__data__;
+
+	if (direction == 'vertical') {
+		var SVGWidth = parseInt(text.parent().css("width"));
+		var SVGHeight = parseInt(text.parent().css("height"));
+		//console.log(SVGWidth+" "+SVGHeight);
+
+		d3.select(text[0])
+		.attr("y",SVGWidth/2)
+		.attr("x",-SVGHeight+3);
+	}
+
+	return newText;
 }

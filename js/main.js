@@ -55,6 +55,7 @@ d3.json("../data/SurveyData.json",function(error,json){
             surveyResponseAnswer[i-1] = getResponseAnswer(json[i]);
             surveyDistinctAnswer[i-1] = getDistinctAnswer(surveyResponseAnswer[i-1]);
         }
+        syncResponseWithDA();
     }
     //console.log(surveyDataIndex);
     //console.log(surveyDataTable);

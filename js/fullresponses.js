@@ -1,5 +1,15 @@
-function createFullResponses(pID, qID, sID) {
-	var currentContainer = $("#panel"+pID+"-sm"+qID+" .chart-container");
+function createFullResponses(pID, qID, sID, ChartType) {
+    if (ChartType == "query") {
+        var qcID = pID;
+        $("#query-chart"+qcID+" .panel .chart-container").remove();
+
+        $("#query-chart"+qcID+" .panel").append($('<div class="chart-container '+query_chart_class+'" style="margin:0px;height:184px;border-top-style:solid;border-top-width:1px" qID='+qID+'></div>'))
+        //$("#query-chart"+qcID+" .chart-container").addClass("barchart");
+        var currentContainer = $("#query-chart"+qcID+" .chart-container");
+        $("#query-chart"+qcID).css("height",parseInt($("#query-chart"+qcID+" .question-area").css("height"))+200+"px");
+        $("#query-chart"+qcID+" .panel").css("height","100%");
+    }
+	else var currentContainer = $("#panel"+pID+"-sm"+qID+" .chart-container");
 	currentContainer.attr("sID",sID);
 	//var currentChart = $('<div class="col-lg-12 resp-text chart no-drag" sID='+sID+' qID='+qID+' style="height:100%; overflow-y:auto"></div>');
 	//currentContainer.append(currentChart);
@@ -22,5 +32,5 @@ function createFullResponses(pID, qID, sID) {
         }
     }
 
-    adjustSMPanelSize(qID);
+    if (ChartType != "query") adjustSMPanelSize(qID);
 }

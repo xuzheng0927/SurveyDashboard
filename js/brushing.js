@@ -1,22 +1,24 @@
-function brushAllCharts(pID,sID,qID,response,panel,clickedbar) {
+function brushAllCharts(sID,qID,response,panel,clickedbar) {
 	if ((window.brushSettings[sID] instanceof Object) == false) window.brushSettings[sID] = new Object();
 	window.brushSettings[sID] = {"qID":qID,"response":response,"clickedbar":clickedbar};
 	// if (window.brushSettings[sID]["clickedbar"] instanceof Object) clickedbar = window.brushSettings[sID]["clickedbar"];
 	// else window.brushSettings[sID]["clickedbar"] = clickedbar;
 
 	if (panel instanceof Object) {
-		var allCharts = panel.find(".chart");
+		var allCharts = panel.find(".chart-container");
 	}
-	else var allCharts = $(".chart");
+	else var allCharts = $(".chart-container");
 	var currentAllTotalRects;
 	var currentAllBrushedRects;
-	var newWidth;
+	var newWidth, newHeight;
 	var tempResp;
+	//console.log(clickedbar);
 
 	for (var i=0; i<allCharts.length; i++) {
-		if ($(allCharts[i]).attr("sID") != sID) continue;
+		//if ($(allCharts[i]).attr("sID") != sID) continue;
+		//console.log($(allCharts[i]).parent().parent());
 
-		if ($(allCharts[i]).hasClass("sm-barchart")) {
+		if ($(allCharts[i]).parent().parent().hasClass("sm-barchart") | $(allCharts[i]).hasClass("barchart")) {
 			//console.log($(allCharts[i]).find("rect"));
 			currentAllTotalRects = $(allCharts[i]).find(".totalRect");
 			currentAllBrushedRects = $(allCharts[i]).find(".brushedRect");
@@ -28,7 +30,7 @@ function brushAllCharts(pID,sID,qID,response,panel,clickedbar) {
 				if (!responseMatch(surveyDataTable[sID][j][qID],response)) continue;
 
 				for (var r=0; r<currentAllTotalRects.length; r++){
-					if (currentAllTotalRects[r].getAttribute("qID") == qID & currentAllTotalRects[r].getAttribute("pID") == pID
+					if (currentAllTotalRects[r].getAttribute("qID") == qID 
 						& currentAllTotalRects[r].getAttribute("response") != response) continue;
 					tempResp = surveyDataTable[sID][j][currentAllTotalRects[r].getAttribute("qID")];
 					if (tempResp instanceof Array == true) {
@@ -44,8 +46,11 @@ function brushAllCharts(pID,sID,qID,response,panel,clickedbar) {
 			//console.log(brushedNums);
 
 			for (var r=0; r<currentAllBrushedRects.length; r++){
+				//console.log(currentAllTotalRects[r].getAttribute("onclick"));
 				if (currentAllTotalRects[r].getAttribute("onclick") == clickedbar.getAttribute("onclick")) clickedbar = currentAllTotalRects[r];
 				newWidth = $(currentAllTotalRects[r]).attr("width") / currentAllTotalRects[r].__data__ * brushedNums[r];
+				//console.log(currentAllBrushedRects[r]);
+				//console.log(newWidth);
 				d3.select(currentAllBrushedRects[r])
 				.attr("brushed","true")
 				.transition().duration(500)
@@ -78,7 +83,7 @@ function brushAllCharts(pID,sID,qID,response,panel,clickedbar) {
 				currentAllBrushedRects[r].__data__ = brushedNums[r]
 			}
 		}
-		else if ($(allCharts[i]).hasClass("sm-text")) {
+		else if ($(allCharts[i]).parent().parent().hasClass("sm-text") | $(allCharts[i]).hasClass("resp-text")) {
 			var currentAllRespTextPri = $(allCharts[i]).find(".response-pri");
 			var currentAllRespTextSec = $(allCharts[i]).find(".response-sec");
 			//console.log(currentAllRespText);
@@ -103,9 +108,65 @@ function brushAllCharts(pID,sID,qID,response,panel,clickedbar) {
 				}
 			}
 		}
-		else if ($(allCharts[i]).hasClass("sm-barchart-num")) {
-			currentAllTotalRects = $(allCharts[i]).find(".totalRect");
-			currentAllBrushedRects = $(allCharts[i]).find(".brushedRect");
+		// else if ($(allCharts[i]).parent().parent().hasClass("sm-barchart-num")) {
+		// 	currentAllTotalRects = $(allCharts[i]).find(".totalRect");
+		// 	currentAllBrushedRects = $(allCharts[i]).find(".brushedRect");
+		// 	var brushedNums = new Array();
+		// 	var tempUpBound, tempLoBound;
+		// 	for (var j=0; j<currentAllTotalRects.length;j++) brushedNums[j]=0;
+
+		// 	for (var j=2; j<surveyDataTable[sID].length;j++) {
+		// 		//if (surveyDataTable[sID][j][qID] != response) continue;
+		// 		if (!responseMatch(surveyDataTable[sID][j][qID],response)) continue;
+
+		// 		for (var r=0; r<currentAllTotalRects.length; r++){
+		// 			tempResp = surveyDataTable[sID][j][currentAllTotalRects[r].getAttribute("qID")];
+		// 			tempUpBound = currentAllTotalRects[r].getAttribute("upbound");
+		// 			tempLoBound = currentAllTotalRects[r].getAttribute("lobound");
+		// 			if (tempLoBound == "-Infinity") {
+		// 				if (parseFloat(tempResp) <= parseFloat(tempUpBound)) brushedNums[r] += 1;
+		// 			}
+		// 			else {
+		// 				if (parseFloat(tempResp) > parseFloat(tempLoBound) & parseFloat(tempResp) <= parseFloat(tempUpBound)) brushedNums[r] += 1;
+		// 			}
+		// 		}
+		// 	}
+
+		// 	for (var r=0; r<currentAllBrushedRects.length; r++){
+		// 		if (currentAllTotalRects[r].__data__ == 0) continue;
+		// 		if (currentAllTotalRects[r].getAttribute("onclick") == clickedbar.getAttribute("onclick")) clickedbar = currentAllTotalRects[r];
+
+		// 		newWidth = $(currentAllTotalRects[r]).attr("width") / currentAllTotalRects[r].__data__ * brushedNums[r];
+		// 		d3.select(currentAllBrushedRects[r])
+		// 		.attr("brushed","true")
+		// 		.transition().duration(500)
+		// 		.attr("width",newWidth)
+		// 		.attr("stroke-width",function(){
+		// 			if (currentAllTotalRects[r] == clickedbar) return 2;
+		// 			else return 1;
+		// 		})
+		// 		.attr("stroke",function(){
+		// 			if (currentAllTotalRects[r] == clickedbar) return "cyan";
+		// 			else return "black";
+		// 		})
+		// 		.attr("fill-opacity",function(){
+		// 			if (currentAllTotalRects[r] == clickedbar) return 0.7;
+		// 			else return 1;
+		// 		})
+		// 		.selectAll("title")
+		// 		.text(function(){
+		// 			if (response instanceof Object) {
+		// 				return brushedNums[r]+' response '+(response.lobound=='-Infinity'?'':'>'+response.lobound+' and')+' <='+response.upbound+' in '+qID;
+		// 			}
+		// 			else return brushedNums[r]+' response "'+response+'" in '+qID;
+		// 		});
+
+		// 		currentAllBrushedRects[r].__data__ = brushedNums[r]
+		// 	}
+		// }
+		else if ($(allCharts[i]).hasClass("histogram") | $(allCharts[i]).parent().parent().hasClass("sm-barchart-num")) {
+			currentAllTotalRects = $(allCharts[i]).find(".totalHistRect");
+			currentAllBrushedRects = $(allCharts[i]).find(".brushedHistRect");
 			var brushedNums = new Array();
 			var tempUpBound, tempLoBound;
 			for (var j=0; j<currentAllTotalRects.length;j++) brushedNums[j]=0;
@@ -118,23 +179,26 @@ function brushAllCharts(pID,sID,qID,response,panel,clickedbar) {
 					tempResp = surveyDataTable[sID][j][currentAllTotalRects[r].getAttribute("qID")];
 					tempUpBound = currentAllTotalRects[r].getAttribute("upbound");
 					tempLoBound = currentAllTotalRects[r].getAttribute("lobound");
-					if (tempLoBound == "-Infinity") {
-						if (parseFloat(tempResp) <= parseFloat(tempUpBound)) brushedNums[r] += 1;
-					}
-					else {
-						if (parseFloat(tempResp) > parseFloat(tempLoBound) & parseFloat(tempResp) <= parseFloat(tempUpBound)) brushedNums[r] += 1;
-					}
+					if (parseFloat(tempResp) > parseFloat(tempLoBound) & parseFloat(tempResp) <= parseFloat(tempUpBound)) brushedNums[r] += 1;
 				}
 			}
 
 			for (var r=0; r<currentAllBrushedRects.length; r++){
 				if (currentAllTotalRects[r].__data__ == 0) continue;
+				if (currentAllTotalRects[r].getAttribute("onclick") == clickedbar.getAttribute("onclick")) clickedbar = currentAllTotalRects[r];
 
-				newWidth = $(currentAllTotalRects[r]).attr("width") / currentAllTotalRects[r].__data__ * brushedNums[r];
+				newHeight = $(currentAllTotalRects[r]).attr("height") / currentAllTotalRects[r].__data__.value * brushedNums[r];
+				oldHeight = $(currentAllBrushedRects[r]).attr("height");
+
 				d3.select(currentAllBrushedRects[r])
 				.attr("brushed","true")
 				.transition().duration(500)
-				.attr("width",newWidth)
+				.attr("height",newHeight)
+				.attr("y",function(d) {
+					//console.log($(this).attr("y") - newHeight + oldHeight);
+					//return $(this).attr("y") + oldHeight - newHeight;
+					return parseInt($(currentAllTotalRects[r]).attr("y")) + parseInt($(currentAllTotalRects[r]).attr("height")) - newHeight;
+				})
 				.attr("stroke-width",function(){
 					if (currentAllTotalRects[r] == clickedbar) return 2;
 					else return 1;
@@ -155,19 +219,34 @@ function brushAllCharts(pID,sID,qID,response,panel,clickedbar) {
 					else return brushedNums[r]+' response "'+response+'" in '+qID;
 				});
 
-				currentAllBrushedRects[r].__data__ = brushedNums[r]
+				//currentAllBrushedRects[r].__data__ = {"value":brushedNums[r],"min":currentAllTotalRects[r].__data__.min,"max":currentAllTotalRects[r].__data__.max};
+				currentAllBrushedRects[r].__data__ = new Object();
+				currentAllBrushedRects[r].__data__.value = brushedNums[r];
+				currentAllBrushedRects[r].__data__.min = currentAllTotalRects[r].__data__.min;
+				currentAllBrushedRects[r].__data__.max = currentAllTotalRects[r].__data__.max;
+				//console.log(currentAllTotalRects[r].__data__);
 			}
-		}		
+		}
+		else if ($(allCharts[i]).hasClass("scatter")) {
+			d3.select(allCharts[i]).selectAll(".scatter-point")
+			.attr("fill",function (d,index) {
+				if (responseMatch(surveyDataTable[sID][$(this).attr("index")][qID],response)) {
+					return "cyan";
+				}
+				else return "#333333";
+			})
+		}	
 	}
 }
 
 function clearBrushing(sID) {
-	var allCharts = $(".chart");
+	var allCharts = $(".chart-container");
 
 	for (var i=0; i<allCharts.length; i++) {
-		if ($(allCharts[i]).attr("sID") != sID) continue;
+		//if ($(allCharts[i]).attr("sID") != sID) continue;
 
-		if ($(allCharts[i]).hasClass("sm-barchart") | $(allCharts[i]).hasClass("sm-barchart-num")) {
+		if ($(allCharts[i]).parent().parent().hasClass("sm-barchart") | $(allCharts[i]).parent().parent().hasClass("sm-barchart-num")
+			| $(allCharts[i]).hasClass("barchart")) {
 			var currentAllBrushedRects = $(allCharts[i]).find(".brushedRect");
 			for (var j=0; j<currentAllBrushedRects.length; j++) {
 				d3.select(currentAllBrushedRects[j])
@@ -180,7 +259,7 @@ function clearBrushing(sID) {
 				$(currentAllBrushedRects[i]).__data__ = 0;
 			}
 		}
-		else if ($(allCharts[i]).hasClass("sm-text")) {
+		else if ($(allCharts[i]).parent().parent().hasClass("sm-text") | $(allCharts[i]).hasClass("resp-text")) {
 			var currentAllRespTextPri = $(allCharts[i]).find(".response-pri");
 			var currentAllRespTextSec = $(allCharts[i]).find(".response-sec");
 			currentAllRespTextPri.show("slow").animate({color:"black"});
@@ -188,6 +267,28 @@ function clearBrushing(sID) {
 			currentAllRespTextSec.hide("slow");
 			$(allCharts[i]).find("hr").hide("slow");
 		}
+		else if ($(allCharts[i]).hasClass("histogram")) {
+			var currentAllBrushedRects = $(allCharts[i]).find(".brushedHistRect");
+			for (var j=0; j<currentAllBrushedRects.length; j++) {
+				d3.select(currentAllBrushedRects[j])
+				.attr("brushed","false")
+				.transition().duration(500)
+				.attr("y",function(d){
+					return parseFloat($(this).attr("y")) + parseFloat($(this).attr("height"));
+				})
+				.attr("height",0)
+				.attr("stroke","black")
+				.attr("stroke-width",1)
+
+				$(currentAllBrushedRects[i]).__data__ = 0;
+			}
+		}
+		else if ($(allCharts[i]).hasClass("scatter")) {
+			d3.select(allCharts[i]).selectAll(".scatter-point")
+			.attr("fill",function (d,index) {
+				return "#333333";
+			})
+		}	
 	}
 
 	window.brushSettings[sID] = null;

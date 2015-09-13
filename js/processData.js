@@ -128,3 +128,15 @@ function getDistinctAnswer(responseAnswerList) {
 	}
 	return distinctRespList;
 }
+
+function syncResponseWithDA() {
+	for (var i=0; i<surveyResponseAnswer.length; i++) {
+		for (q in surveyResponseAnswer[i]) {
+			for (j=0; j<surveyDistinctAnswer[i].length; j++) {
+				if (equalArrays(surveyDistinctAnswer[i][j],surveyResponseAnswer[i][q])) {
+					surveyResponseAnswer[i][q] = surveyDistinctAnswer[i][j];
+				}
+			}
+		}
+	}
+}

@@ -49,9 +49,12 @@ function newTabDOM(pID) {
     DOMstring += '<span class="glyphicon glyphicon-plus" aria-hidden="true"></span></span>';
 
     DOMstring += '<div class="tab-content '+overview_query_class+'" style="padding:0">';
-    DOMstring += '<div id="overview-area" class="tab-pane fade in active '+overview_query_class+'" pID=0 style="padding:0"></div>';
+    DOMstring += '<div id="overview-area" class="tab-pane fade in active '+overview_query_class+'" pID=0 style="padding:0">';
+    DOMstring += '<div class="'+overview_query_class+' page-header" style="text-align:center;margin-top:0px;margin-bottom:0px;display:none;';
+    DOMstring += 'border-width:1px; border-style:solid; border-color:#ddd;padding-top:7px;padding-bottom:5px"></div></div>';
     DOMstring += '<div id="query-area" class="tab-pane fade '+overview_query_class+'" style="padding:0; border-width:1px;';
-    DOMstring += 'border-top-style:solid; border-right-style:solid; border-left-style:solid; border-width:1px; border-color:#ddd"></div>';
+    DOMstring += 'border-top-style:solid; border-right-style:solid; border-left-style:solid; border-width:1px; border-color:#ddd">';
+    DOMstring += '<div class="'+overview_query_class+' page-header" style="text-align:center;margin-top:5px;margin-bottom:1px"></div></div>';
 
     DOMstring += '</div></ul>';
 
@@ -66,8 +69,26 @@ function newOverviewDOM(pID) {
     return $('<div id="overview-area" class="tab-pane fade in active overview-area"></div>');
 }
 
+// function newQueryChartDOM(qcID) {
+//     return $('<div id="query-chart'+qcID+'" class="query-chart '+overview_query_class+'" qcID='+qcID+' style="padding:0px"></div>');
+// }
+
 function newQueryChartDOM(qcID) {
-    return $('<div id="query-chart'+qcID+'" class="query-chart '+overview_query_class+'" qcID='+qcID+' style="padding:0px"></div>');
+    var DOMstring = '<div id="query-chart'+qcID+'" class="query-chart col-lg-6" qcID='+qcID+' style="padding:5px">';
+
+    DOMstring += '<div class="panel panel-primary col-lg-12" style="padding:0px;height:100%;border-color:black;">';
+
+    DOMstring += '<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="position:absolute;z-index:100">';
+    DOMstring += '<button type="button" class="close pull-right sm-panel-close" aria-label="Close">';
+    DOMstring += '<span aria-hidden="true">×</span><span class="sr-only">Close</span></button>';
+    DOMstring += '</div>';
+
+    DOMstring += '<div class="col-lg-12 chart-container no-drag" style="height:200px"></div>';
+
+    DOMstring += '</div>';
+    DOMstring += '</div>';
+
+    return $(DOMstring);
 }
 
 function newSurveyAreaDOM(ID) {
@@ -135,7 +156,7 @@ function newQuestionSelectorDOM(pID) {
     DOMstring += ' pID='+pID;
 
 	DOMstring += ' class="selectpicker question-selector" multiple data-live-search="true" data-selected-text-format="count"';
-    DOMstring += ' data-live-search-placeholder="Search" title="Choose a question" data-width="72%" data-container="body">';
+    DOMstring += ' data-live-search-placeholder="Search" title="Choose a question" data-width="91%" data-container="body">';
 
 	// Add in available survey entries
     //var surveyIndex = $("#panel"+pID+"-surveyselector").val();
@@ -292,6 +313,12 @@ function newAllResponsesDOM(sID,qID) {
     return $(DOMstring);
 }
 
+function newQueryHeaderDOM(qcID) {
+    var DOMstring = '<div class="'+overview_query_class+' query-header" style="height:54px;display:none;overflow-y:auto;';
+    DOMstring += 'padding:10px 0 0 16px">Selected questions: none</div>';
+    return $(DOMstring);
+}
+
 function adjustSMPanelSize(qID) {
     var currentSMPanel = $(".sm-panel[qID='"+qID+"']");
     var currentHeading = currentSMPanel.find(".panel-heading");
@@ -316,8 +343,48 @@ function adjustSMPanelSize(qID) {
     //console.log(heading_height);
     currentSMPanel.find(".chart-container").css("height",(old_con_height - heading_height)+"px");
 
-    if (!currentSMPanel.hasClass("sm-text")) resizeRect(currentSMPanel.attr("pID"),currentSMPanel.attr("qID"));
+    if (!currentSMPanel.hasClass("sm-text")) {
+        if (currentSMPanel.hasClass("sm-barchart-num")) resizeOverviewHistogram(currentSMPanel.attr("pID"),currentSMPanel.attr("qID"));
+        else resizeRect(currentSMPanel.attr("pID"),currentSMPanel.attr("qID"));
+    }
 
     currentSMPanel.find(".ui-resizable-se").css("bottom","1px");
     currentSMPanel.find(".ui-resizable-se").css("right","5px");
+}
+
+function adjustQCSize(qcID) {
+    var currentQueryChart = $(".query-chart[qcID='"+qcID+"']");
+    var currentQuestionArea = currentQueryChart.find(".question-area");
+    //console.log(currentHeading.css("height"));
+
+    // if (parseInt(currentHeading.find(".text-content").css("height")) > 50) currentHeading.css("height",70);
+    // else if (parseInt(currentHeading.find(".text-content").css("height")) > 30) currentHeading.css("height",50);
+    // else currentHeading.css("height",30);
+
+    //if (currentSMPanel.hasClass("sm-text")) {
+        var currentHeight = parseInt(currentQueryChart.css("height"));
+        currentQueryChart.css("height",Math.round(currentHeight/resize_grid_y)*50);
+    //}
+    //else {
+
+    //}
+
+    currentQueryChart.find(".chart-container").css("height","100%");
+    var old_con_height = parseInt(currentQueryChart.find(".chart-container").css("height"));
+    //console.log(old_con_height);
+    var question_height = parseInt(currentQuestionArea.css("height"));
+    //console.log(heading_height);
+    currentQueryChart.find(".chart-container").css("height",(old_con_height - question_height)+"px");
+
+    // if (currentQueryChart.find(".chart-container").hasClass("barchart")) {
+    //     resizeRect(qcID,currentQueryChart.find(".chart-container").attr("qID"),"query");
+    // }
+    // else if (currentQueryChart.find(".chart-container").hasClass("barchart")) {
+    //     resizeRect(qcID,currentQueryChart.find(".chart-container").attr("qID"),"query");
+    // }
+
+    if (!currentQueryChart.find(".chart-container").hasClass("resp-text")) resizeQueryElements(qcID);
+
+    currentQueryChart.find(".ui-resizable-se").css("bottom","1px");
+    currentQueryChart.find(".ui-resizable-se").css("right","5px");
 }

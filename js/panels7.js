@@ -54,6 +54,10 @@ function addNewPanel() {
 
     //$("#panel"+focusID).css("margin","0");
     //nextColumn.animate({width:'toggle',height:'toggle'});
+    $("#query-area").sortable({
+        item: ".query-chart",
+        cancel: "rect"
+    })
 }
 
 function addNewQueryChart() {
@@ -67,15 +71,36 @@ function addNewQueryChart() {
     nextSurveyArea.find(".surveyselector").val(window.sID);
     var nextQuestionArea = newQuestionAreaDOM(focusID);
     var nextQuestionSelector = newQuestionSelectorDOM(focusID);
+    var nextQueryHeader = newQueryHeaderDOM(focusID);
 
     nextQueryChart.appendTo($("#query-area"));
-    nextSurveyArea.appendTo(nextQueryChart);
-    nextQuestionArea.appendTo(nextQueryChart);
+    nextSurveyArea.prependTo(nextQueryChart.find(".panel"));
+    //nextQuestionArea.appendTo(nextQueryChart);
+    nextQuestionArea.prependTo(nextQueryChart.find(".panel"));
     nextQuestionSelector.appendTo(nextQuestionArea);
+    nextQueryHeader.prependTo(nextQueryChart.find(".panel"));
+    nextSurveyArea.hide();
 
     addOptionTags(nextSurveyArea.find(".surveyselector"));
 
     $(".selectpicker").selectpicker("refresh");
+    var query_width = parseInt($("#query-area").css("width"))
+
+    nextQueryChart.resizable({
+        maxWidth: query_width,
+        minWidth: 350,
+        minHeight: 250,
+        alsoResize: $(this).find('.panel'),
+        resize: function (event, ui) {
+            adjustQCSize($(this).attr("qcID"));
+        },
+        stop: function (event, ui) {
+            adjustQCSize($(this).attr("qcID"));
+        }
+    });
+
+    //adjustQCSize($(this).attr("qcID"));
+    createQueryEmpty(window.focusID);
 }
 
 $('#btnAdd').click(function (e) {
@@ -132,19 +157,50 @@ $('#panels').on('click', '.hide-btn', function() {
     // $(".question-area").slideToggle("slow");
 
     if ($(".chart-area").css("border-top-style") == "none") {
-        $(".survey-area").slideToggle("slow",function(){
+        $("#overview-area .survey-area").slideToggle("slow",function(){
             $(".chart-area").css("border-top-style","solid");
+            //adjustQueryChart();
             //$(".chart-area").css("border-radius","0 4px 0 0");
         });
-        $(".question-area").slideToggle("slow");
+        
         // $(".chart-area").css("border-top-style","solid");
         // $(".chart-area").css("border-radius","0 4px 0 0");
     }
     else {
         $(".chart-area").css("border-top-style","none");
         //$(".chart-area").css("border-radius","0 0 0 0");
-        $(".survey-area").slideToggle("slow");
-        $(".question-area").slideToggle("slow");
+        $("#overview-area .survey-area").slideToggle("slow",function(){
+            //adjustQueryChart();
+        });
+        // $(".question-area").slideToggle("slow");
+        // $("#overview-area .page-header").slideToggle("slow");
+        // $("#query-area .query-header").slideToggle("slow");
+    }
+    $(".question-area").slideToggle("slow");
+    $("#overview-area .page-header").slideToggle("slow");
+    $("#query-area .query-header").slideToggle("slow");
+
+    function adjustQueryChart(){
+    if ($("#query-area").css("display") != "none") {
+        var allQueryChart = $("#query-area .query-chart");
+        var tempCHeight, tempPHeight;
+        if ($("#query-area .question-area").css("display") == "none") {
+            for (var i=0; i<allQueryChart.length; i++) {
+                tempCHeight = parseInt($(allQueryChart[i]).css("height"));
+                tempPHeight = parseInt($(allQueryChart[i]).find(".panel").css("height"));
+                $(allQueryChart[i]).css("height",tempCHeight-44);
+                $(allQueryChart[i]).find(".panel").css("height",tempPHeight-44);
+            }
+        }
+        else {
+            for (var i=0; i<allQueryChart.length; i++) {
+                tempCHeight = parseInt($(allQueryChart[i]).css("height"));
+                tempPHeight = parseInt($(allQueryChart[i]).find(".panel").css("height"));
+                $(allQueryChart[i]).css("height",tempCHeight-44);
+                $(allQueryChart[i]).find(".panel").css("height",tempPHeight-44);
+            }
+        }
+    }
     }
 });
 
@@ -316,6 +372,7 @@ function dehighlightPanel(ID){
 function updatePanelBySurveyChange(pID) {
     var newSurveyIndex = $("#overview-area .surveyselector").val();
     window.sID = newSurveyIndex;
+    $(".page-header").text(surveyDataIndex[newSurveyIndex]+" ("+(surveyDataTable[newSurveyIndex].length-2)+" respondents)");
     //var allSiblings = $("#col"+pID).siblings();
 
     if (newSurveyIndex != null) {
@@ -362,7 +419,7 @@ function updatePanelBySurveyChange(pID) {
             //helper: "ui-resizable-helper",
             //alsoResize: $(this).parent(),
             //resize: function(event, ui) {$(this).find("svg").css("top","-67px");}
-            minHeight: 100,
+            minHeight: 150,
             minWidth: 200,
             start: function(event, ui) {
                 $(this).find(".ui-resizable-se").css("bottom","1px");
@@ -472,7 +529,8 @@ function updateDefaultChart(pID) {
             //nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
             nextSmallMultiplePanel.addClass("sm-barchart-num");
             //nextSmallMultiplePanel.addClass(sm_panel_bar_class);
-            createBarChart(pID,qID,currentSurveyIndex,"Numeric");
+            //createBarChart(pID,qID,currentSurveyIndex,"Numeric");
+            createQueryHistogram(pID,qID);
         }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Open-Ended Response") {
             nextSmallMultiplePanel.addClass("sm-text");
@@ -500,7 +558,7 @@ function updateDefaultChart(pID) {
     //$(".chart-area").disableSelection();
 
     if (window.brushSettings[currentSurveyIndex] instanceof Object) {
-        brushAllCharts(pID,currentSurveyIndex,window.brushSettings[currentSurveyIndex].qID,window.brushSettings[currentSurveyIndex].response,$("#overview-area"),window.brushSettings[currentSurveyIndex].clickedbar);
+        brushAllCharts(currentSurveyIndex,window.brushSettings[currentSurveyIndex].qID,window.brushSettings[currentSurveyIndex].response,$("#overview-area"),window.brushSettings[currentSurveyIndex].clickedbar);
     }
 
 }
@@ -550,7 +608,7 @@ function showAllResponses(pID,qID) {
         nextAllResponses.show("normal");
     });
     if (window.brushSettings[currentSurveyIndex] instanceof Object) {
-        brushAllCharts(pID,currentSurveyIndex,window.brushSettings[currentSurveyIndex].qID,window.brushSettings[currentSurveyIndex].response,nextAllResponses);
+        brushAllCharts(currentSurveyIndex,window.brushSettings[currentSurveyIndex].qID,window.brushSettings[currentSurveyIndex].response,nextAllResponses);
     }
     //nextAllResponses.siblings().animate({position:"relative"});
     // nextAllResponses.hide();
@@ -646,12 +704,72 @@ function updateChartByQuestionChange(pID) {
 }
 
 function createQueryChart(sID, qID, qcID) {
-    if (qID == null) $("#query-chart"+qcID+" .chart-container").remove();
+    //console.log(qID);
+    if (qID == null) {
+        createQueryEmpty(qcID);
+        $("#query-chart"+qcID+" .query-header").text("Selected questions: none");
+    }
     else if (qID.length == 1) {
-        createQueryBarchart(qcID);
+        if (surveyDataTable[sID][1][qID[0]] != "Open-Ended Response") createQueryBarchart(qcID);
+        else createFullResponses(qcID,qID[0],sID,"query");
+        $("#query-chart"+qcID+" .query-header").text("Selected question: "+qID[0]+" "+surveyDataTable[sID][0][qID[0]]);
+        $("#query-chart"+qcID+" .query-header").attr("title","Selected question: "+qID[0]+" "+surveyDataTable[sID][0][qID[0]]);
     }
     else if (qID.length == 2) {
-        createQueryHeatmap(qcID);
+        if (containedInArray(surveyDataTable[sID][1][qID[0]],["Response","Multiple Responses"]) &
+            containedInArray(surveyDataTable[sID][1][qID[1]],["Response","Multiple Responses"])) {
+            createQueryHeatmap(qcID);
+        }
+        else if (surveyDataTable[sID][1][qID[0]] == "Numeric" & surveyDataTable[sID][1][qID[1]] == "Numeric") {
+            createQueryScatter(qcID);
+        }
+        else createQueryEmpty(qcID);
+        $("#query-chart"+qcID+" .query-header").text(getQueryHeaderText(qID));
+        $("#query-chart"+qcID+" .query-header").attr("title",getQueryHeaderText(qID));
     }
-    else createQueryEmpty(qcID);
+    else {
+        if (surveyDataTable[sID][1][qID[0]] == "Numeric")
+        {
+            var allNumeric = true;
+            for (var i=0; i<qID.length-1; i++) {
+                if ((surveyDataTable[sID][1][qID[i]]) != "Numeric") {
+                    allNumeric = false;
+                    break;
+                }
+            }
+            if (allNumeric == true) createQueryCorrelation(qcID);
+            else createQueryEmpty(qcID);
+        }
+        else {
+            var sameResp = true;
+            for (var i=0; i<qID.length-1; i++) {
+                if (!equalArrays(surveyResponseAnswer[sID][qID[i]],surveyResponseAnswer[sID][qID[i+1]])) {
+                    sameResp = false;
+                    break;
+                }
+                if (surveyResponseAnswer[sID][qID[i]] == "Ranking Response") {
+                    sameResp = false;
+                    break;
+                }
+            }
+
+            if (sameResp == true) createQueryStacked(qcID);
+            else createQueryEmpty(qcID);
+        }
+        $("#query-chart"+qcID+" .query-header").text(getQueryHeaderText(qID));
+        $("#query-chart"+qcID+" .query-header").attr("title",getQueryHeaderText(qID));
+    }
+
+    if (window.brushSettings[sID] instanceof Object) {
+        brushAllCharts(sID,window.brushSettings[sID].qID,window.brushSettings[sID].response,$("#query-area"),window.brushSettings[sID].clickedbar);
+    }
+
+    function getQueryHeaderText(qID) {
+        var headerText = "Selected questions:";
+        for (var i=0; i<qID.length; i++) {
+            headerText += (" "+qID[i]);
+            if (i != qID.length - 1) headerText += ",";
+        }
+        return headerText;
+    }
 }

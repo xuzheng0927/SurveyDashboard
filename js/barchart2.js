@@ -20,14 +20,27 @@ function createBarChart(pID, qID, sID, RespType, ChartType) {
 	}
 	else {
 		var currentSMPanel = $(".sm-panel[qID='"+qID+"']");
-		for (var i=0; i<surveyDistinctAnswer[sID].length; i++) {
-			if (equalArrays(currentResponseList,surveyDistinctAnswer[sID][i])) {
-				currentSMPanel.attr("daID",i);
-			}
-		}
+		// for (var i=0; i<surveyDistinctAnswer[sID].length; i++) {
+		// 	if (equalArrays(currentResponseList,surveyDistinctAnswer[sID][i])) {
+		// 		currentSMPanel.attr("daID",i);
+		// 	}
+		// }
 		var currentContainer = $("#panel"+pID+"-sm"+qID).find(".chart-container");
 		currentContainer.css("height",default_bar_height*currentResponseList.length);
+
+		// for (var i=0; i<surveyDistinctAnswer[sID].length; i++) {
+		// 	if (equalArrays(currentResponseList,surveyDistinctAnswer[sID][i])) {
+		// 		currentContainer.attr("daID",i);
+		// 	}
+		// }
+
 		adjustSMPanelSize(qID);
+	}
+
+	for (var i=0; i<surveyDistinctAnswer[sID].length; i++) {
+		if (equalArrays(currentResponseList,surveyDistinctAnswer[sID][i])) {
+			currentContainer.attr("daID",i);
+		}
 	}
 	// var containerHeight = parseInt(currentContainer.css("height"));
 	
@@ -45,8 +58,10 @@ function createBarChart(pID, qID, sID, RespType, ChartType) {
 				surveyDistinctAnswer[sID][currentSMPanel.attr("daID")] = currentResponseList;
 			}
 			else {
-				currentRespHistogram = syncList(currentResponseList, currentRespHistogram, surveyDistinctAnswer[sID][currentSMPanel.attr("daID")]);
-				currentResponseList = surveyDistinctAnswer[sID][currentSMPanel.attr("daID")];
+				//currentRespHistogram = syncList(currentResponseList, currentRespHistogram, surveyDistinctAnswer[sID][currentSMPanel.attr("daID")]);
+				//currentResponseList = surveyDistinctAnswer[sID][currentSMPanel.attr("daID")];
+				currentRespHistogram = syncList(currentResponseList, currentRespHistogram, surveyDistinctAnswer[sID][currentContainer.attr("daID")]);
+				currentResponseList = surveyDistinctAnswer[sID][currentContainer.attr("daID")];
 				//console.log(currentResponseList);
 			}
 		}
@@ -86,7 +101,8 @@ function createBarChart(pID, qID, sID, RespType, ChartType) {
 		.attr("x",newSVGWidth*text_offset_ratio)
 		.attr("y",newSVGHeight*0.7)
 		//.attr("cursor","pointer")
-		.attr("font-size",newSVGHeight*fs_ratio.y)
+		//.attr("font-size",newSVGHeight*fs_ratio.y)
+		.attr("font-size",15)
 		.text(currentResponseList[i])
 		.text(function(d){
 			var currentTextWidth = $(this).width();
@@ -104,11 +120,11 @@ function createBarChart(pID, qID, sID, RespType, ChartType) {
 		.attr("class","totalRect")
 		.attr("cursor","pointer")
 		.attr("response",currentResponseList[i])
-		.attr("upbound",RespType == "Numeric" ? numericResponseList[i] : null)
+		.attr("upbound",RespType == "Numeric" ? Math.round(numericResponseList[i]) : null)
 		.attr("lobound",function(d){
 			if (RespType == "Numeric") {
 				if (i == 0) return Number.NEGATIVE_INFINITY;
-				else return numericResponseList[i-1];
+				else return Math.round(numericResponseList[i-1]);
 			}
 			else return null;
 		})
@@ -140,9 +156,9 @@ function createBarChart(pID, qID, sID, RespType, ChartType) {
 		//.attr("onclick",'brushAllCharts('+sID+',"'+qID+'","'+currentResponseList[i]+'")')
 		.attr("onclick",function(d){
 			if (RespType == "Numeric") {
-				return 'brushAllCharts('+pID+','+sID+',"'+qID+'",{"lobound":'+this.getAttribute("lobound")+',"upbound":'+this.getAttribute("upbound")+'},0,this);';
+				return 'brushAllCharts('+sID+',"'+qID+'",{"lobound":'+this.getAttribute("lobound")+',"upbound":'+this.getAttribute("upbound")+'},0,this);';
 			}
-			else if (RespType != "Ranking Response") return 'brushAllCharts('+pID+','+sID+',"'+qID+'","'+currentResponseList[i]+'",0,this);';
+			else if (RespType != "Ranking Response") return 'brushAllCharts('+sID+',"'+qID+'","'+currentResponseList[i]+'",0,this);';
 		})
 		.append("title").text(function(d){
 			if (RespType == "Ranking Response") {
@@ -170,7 +186,7 @@ function createBarChart(pID, qID, sID, RespType, ChartType) {
 		.attr("onclick","clearBrushing("+sID+");")
 		.append("title");
 
-		newResponseBar.find("svg").attr("max",Math.max.apply(null,currentRespHistogram));
+		newResponseBar.find("svg").attr("max",RespType == "Ranking Response" ? Math.max.apply(null,currentRankData) : Math.max.apply(null,currentRespHistogram));
 	}
 
 	currentContainer.sortable({
@@ -180,13 +196,20 @@ function createBarChart(pID, qID, sID, RespType, ChartType) {
 		containment: 'parent',
 		start: function(event, ui) {
 			ui.item.attr("oldIndex",ui.item.index());
+			//console.log(ui.item.parent());
 		},
 		stop: function(event, ui) {
 			if (ui.item.attr("oldIndex") == ui.item.index()) return;
-			thisSMPanel = $(this).parent().parent();
-			if (thisSMPanel.hasClass("sm-barchart")) {
-				syncBarOrder($(thisSMPanel).attr("pID"),$(thisSMPanel).attr("qID"),
-					$(thisSMPanel).attr("sID"),$(thisSMPanel).attr("daID"), ui.item.attr("oldIndex"), ui.item.index(), ui.item.attr("datavalue"));
+			//thisSMPanel = $(this).parent().parent();
+			//if (thisSMPanel.hasClass("sm-barchart")) {
+				//syncBarOrder($(thisSMPanel).attr("pID"),$(thisSMPanel).attr("qID"),
+				//	$(thisSMPanel).attr("sID"),$(thisSMPanel).attr("daID"), ui.item.attr("oldIndex"), ui.item.index(), ui.item.attr("datavalue"));
+				syncRespOrder(ui.item);
+			//}
+			var allMatchedChart = $("#query-area .stacked [daID='"+$(this).attr("daID")+"']");
+			//console.log(allMatchedChart);
+			for (var i=0; i<allMatchedChart.length; i++) {
+				syncStackedBars($(allMatchedChart[i]).children().attr("qcID"));
 			}
 		}
 	});
@@ -323,23 +346,25 @@ function resizeRect(pID, qID, ChartType) {
 
 	//var currentResponseList = surveyResponseAnswer[sID]["Q"+qID];
 	//var currentRespHistogram = getHistogramData(currentResponseList, qID, sID);
-	if (ChartType == "query") var find_in_tab = "#query-area";
-	else var find_in_tab = "#overview-area";
+	if (ChartType == "query") var find_in_tab = "#query-area [qcID="+pID+"]";
+	else var find_in_tab = "#overview-area [qID="+qID+"]";
+	//console.log(find_in_tab+pID+"][qID='"+qID+"'] svg")
 
-	var newSVGHeight = parseInt($(find_in_tab+" [qID='"+qID+"'] svg").first().css("height"));
-	var newSVGWidth = parseInt($(find_in_tab+" [qID='"+qID+"'] svg").first().css("width"));
-	var containerHeight = parseInt($(find_in_tab+" [qID='"+qID+"'] .chart-container").css("width"));
-	var maxValue = $(find_in_tab+" [qID='"+qID+"'] svg").attr("max");
+	var newSVGHeight = parseInt($(find_in_tab+" svg").first().css("height"));
+	var newSVGWidth = parseInt($(find_in_tab+" svg").first().css("width"));
+	var containerHeight = parseInt($(find_in_tab+" .chart-container").css("width"));
+	var maxValue = $(find_in_tab+" svg").attr("max");
 
 
-	d3.select($(find_in_tab+" [qID='"+qID+"']")[0]).selectAll("text")
+	d3.select($(find_in_tab)[0]).selectAll("text")
 		//.transition()
 		//.attr("x",newSVGWidth*0.29)
 		.attr("x",newSVGWidth*text_offset_ratio)
 		.attr("y",newSVGHeight*0.7)
 		//.attr("cursor","pointer")
 		//.attr("text-anchor","end")
-		.attr("font-size",newSVGHeight*fs_ratio.y)
+		//.attr("font-size",newSVGHeight*fs_ratio.y)
+		.attr("font-size",15)
 		.text(function(d){
 			return d;
 		})
@@ -380,7 +405,7 @@ function resizeRect(pID, qID, ChartType) {
 
 	//for (var i=0; i<allText.length; i++) $(allText[i]).append("<title>"+$(allText[i]).parent().parent().attr("datavalue")+"</title>");
 
-	d3.select($(find_in_tab+" [qID='"+qID+"']")[0]).selectAll("rect")
+	d3.select($(find_in_tab)[0]).selectAll("rect")
 		//.transition()
 		.attr("x",newSVGWidth*bar_offset_ratio)
 		// .attr("y",newSVGHeight*0.1)
@@ -406,6 +431,16 @@ function resizeRect(pID, qID, ChartType) {
 				}
 			}
 		})
+		// .attr("width",function(d){
+		// 	if (d == 0) return newSVGWidth * 0.01;
+		// 	else {
+		// 		if (RespType == "Ranking Response"){
+		// 			//console(d+" "+Math.max.apply(null,currentRankData));
+		// 			return newSVGWidth*d/Math.max.apply(null,currentRankData)*bar_svg_width_ratio;
+		// 		}
+		// 		else return newSVGWidth*d/Math.max.apply(null,currentRespHistogram)*bar_svg_width_ratio;
+		// 	}
+		// })
 		//.attr("height", newSVGHeight*0.70)
 		.attr("height", newSVGHeight*bar_svg_height_ratio)
 		.attr("y",function(d){
@@ -457,6 +492,89 @@ function syncList(responseList, valueData, listToSync) {
 		}
 	}
 	return newValues;
+}
+
+function syncRespOrder(movedItem, ChartType) {
+	var sID = window.sID;
+	var daID = movedItem.parent().attr("daID");
+	var oldIndex = movedItem.attr("oldIndex");
+	var newIndex = movedItem.index();
+	var datavalue = movedItem.attr("datavalue");
+	//console.log(movedItem);
+
+	var allMatchedCharts = $("[daID='"+daID+"']");
+	//var movedItem = (ChartType == "query" ? $("#query-chart"+pID+" [daID='"daID+"'] [datavalue='"+datavalue+"']") : $("#panel"+pID+"-sm"+qID+" [datavalue='"+datavalue+"']");
+	movedItem.removeAttr("datavalue");
+	var allMatchedItems = $("[daID='"+daID+"'] [datavalue='"+datavalue+"']");
+	var maxIndex = $(allMatchedCharts[0]).children().length;
+
+	for (var i=0; i<allMatchedItems.length; i++) {
+		if (allMatchedItems[i] == movedItem[0]) {
+			allMatchedItems.pop(i);
+			break;
+		}
+	}
+	//console.log(allMatchedItems);
+
+	// if (movedItem.parent().hasClass("heatmap-q2-col")) {
+	// 	var qcID = movedItem.attr("qcID");
+	// 	var qID1 = $("#query-chart"+qcID+" .heatmap").attr("qID1");
+	// 	var qID2 = $("#query-chart"+qcID+" .heatmap").attr("qID2");
+	// 	appendCellsToQ2(qcID, qID1, qID2);
+	// }
+
+	allMatchedItems.hide("fast",function(){
+		for (var i=0; i<allMatchedItems.length; i++) {
+			//if ($(allBars[i]).parent().parent().attr("pID") == pID & $(allBars[i]).parent().parent().attr("qID") == qID) continue;
+			if ($(allMatchedItems[i]).parent().hasClass("heatmap-q2-col")) {
+				//console.log("append to q2");
+				var qcID = $(allMatchedItems[i]).attr("qcID");
+				var qID1 = $("#query-chart"+qcID+" .heatmap").attr("qID1");
+				var qID2 = $("#query-chart"+qcID+" .heatmap").attr("qID2");
+				appendCellsToQ2(qcID, qID1, qID2);
+			}
+
+			if (newIndex == 0) {
+				//var parent = $(allBars[i]).parent();
+				$(allMatchedItems[i]).prependTo($(allMatchedItems[i]).parent());
+			}
+			else if (newIndex == maxIndex) {
+				$(allMatchedItems[i]).appendTo($(allMatchedItems[i]).parent());
+			}
+			else {
+				if (newIndex < oldIndex) {
+					var upperSibling = $($(allMatchedItems[i]).parent().children()[newIndex-1]);
+					upperSibling.after($(allMatchedItems[i]));
+				}
+				else {
+					var lowerSibling = $($(allMatchedItems[i]).parent().children()[newIndex+1]);
+					lowerSibling.before($(allMatchedItems[i]));
+				}
+			}
+
+			if ($(allMatchedItems[i]).parent().hasClass("resp-group")) {
+				//console.log($(allMatchedItems[i]).attr("qcID"));
+				syncStackedBars($(allMatchedItems[i]).attr("qcID"));
+			}
+
+			if ($(allMatchedItems[i]).parent().hasClass("heatmap-q2-col")) {
+				//console.log("append to q1")
+				appendCellsToQ1(qcID, qID1, qID2);
+				$(allMatchedItems[i]).parent().find("svg").css("width","100%");
+			}
+		}
+		//console.log(oldIndex);
+		//updateDistinctAnswer(daID, oldIndex, newIndex, maxIndex);
+		allMatchedItems.show("fast");
+	});
+
+	//allMatchedItems.show("fast");
+
+	// if (movedItem.parent().hasClass("heatmap-q2-col")) appendCellsToQ1(qcID, qID1, qID2);
+
+	movedItem.attr("datavalue",datavalue);
+	//console.log(oldIndex);
+	updateDistinctAnswer(daID, movedItem.attr("oldIndex"), newIndex, maxIndex);
 }
 
 function syncBarOrder(pID, qID, sID, daID, oldIndex, newIndex, datavalue){
@@ -519,7 +637,7 @@ function syncBarOrder(pID, qID, sID, daID, oldIndex, newIndex, datavalue){
 			break;
 		}
 	}
-	console.log(allBars);
+	//console.log(allBars);
 	allBars.hide("fast",function(){
 		for (var i=0; i<allBars.length; i++) {
 			if ($(allBars[i]).parent().parent().attr("pID") == pID & $(allBars[i]).parent().parent().attr("qID") == qID) continue;
@@ -547,8 +665,40 @@ function syncBarOrder(pID, qID, sID, daID, oldIndex, newIndex, datavalue){
 	allBars.show("fast");
 
 	movedBar.attr("datavalue",datavalue);
+
+	updateDistinctAnswer(daID, oldIndex, newIndex, maxIndex);
 }
 
 function cutText(textContent, threshold) {
 	return textContent.length < threshold ? textContent : textContent.substring(0,threshold-1)+"...";
+}
+
+function updateDistinctAnswer(daID, oldIndex, newIndex, maxIndex) {
+	var currentDAs = surveyDistinctAnswer[window.sID][daID];
+	var	newDAs = new Array();
+	newDAs[newIndex] = currentDAs[oldIndex];
+
+	for (var i=0; i<currentDAs.length; i++) {
+		if (i == newIndex) continue;
+		if (newIndex < oldIndex) {
+			if (i < newIndex) newDAs[i] = currentDAs[i];
+			else if (i <= oldIndex) newDAs[i] = currentDAs[i-1];
+			else newDAs[i] = currentDAs[i];
+		}
+		else {
+			if (i > newIndex) newDAs[i] = currentDAs[i];
+			else if (i >= oldIndex) newDAs[i] = currentDAs[i+1];
+			else newDAs[i] = currentDAs[i];
+		}
+	}
+
+	//console.log(newDAs);
+
+	surveyDistinctAnswer[window.sID][daID] = newDAs;
+
+	for (q in surveyResponseAnswer[window.sID]) {
+		if (equalArrays(surveyResponseAnswer[window.sID][q], newDAs)) {
+			surveyResponseAnswer[window.sID][q] = newDAs;
+		}
+	}
 }

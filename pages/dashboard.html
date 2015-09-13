@@ -11,6 +11,17 @@
 
     <title>Survey Dashboard</title>
 
+    <STYLE>  
+        .panel-heading::-webkit-scrollbar{
+            color:#ffcc99;
+            width: 2px;
+        }
+        .query-header::-webkit-scrollbar{
+            color:#ffffff;
+            width: 2px;
+        }
+    </STYLE>  
+
     <!-- Bootstrap Core CSS -->
     <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -27,7 +38,6 @@
     <!-- D3 charts styles -->
     <link rel="stylesheet" type="text/css" href="../dist/css/bootstrap-select.css">
     <!-- <link rel="stylesheet" type="text/css" href="../css/splom.css"> -->
-    <link rel="stylesheet" type="text/css" href="../css/query-heatmap.css">
 
     <link rel="stylesheet" href="../bower_components/jquery-ui/jquery-ui.css">
 
@@ -131,8 +141,11 @@
     <script type="text/javascript" src="../js/brushing.js"></script>
     <script type="text/javascript" src="../js/querybarchart.js"></script>
     <script type="text/javascript" src="../js/queryheatmap.js"></script>
+    <script type="text/javascript" src="../js/stacked.js"></script>
+    <script type="text/javascript" src="../js/queryscatter.js"></script>
     <script type="text/javascript" src="../js/resize.js"></script>
     <script type="text/javascript" src="../js/empty.js"></script>
+    <script type="text/javascript" src="../js/querycorrelation.js"></script>
 
     <!-- Framework code -->
     <script type="text/javascript" src="../js/panelsDOM7.js"></script>
