@@ -99,7 +99,20 @@ function drawCorrelationMatrix(qcID, qID) {
 	$("#query-chart"+qcID).css("height",quest_height+con_height+20);
 	$("#query-chart"+qcID+" .panel").css("height","100%");
 
-	createQueryScatter(qcID,"aside",[qID[0],qID[1]]);
+	var maxCorrelation = -Infinity;
+	var scatterqID = new Array();
+	for (var i1=0; i1<correMatrix.length; i1++) {
+		for (var i2=0; i2<correMatrix[0].length; i2++) {
+			if (i1 != i2 & correMatrix[i1][i2] > maxCorrelation) {
+				scatterqID[0] = qID[i1];
+				scatterqID[1] = qID[i2];
+				maxCorrelation = correMatrix[i1][i2];
+			}
+		}
+	}
+
+	//createQueryScatter(qcID,"aside",[qID[0],qID[1]]);
+	createQueryScatter(qcID,"aside",scatterqID);
 }
 
 function getCorrelationMatrix(qID) {

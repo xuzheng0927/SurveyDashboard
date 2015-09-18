@@ -3,12 +3,14 @@ function resizeQueryElements(qcID){
     var qID;
     for (var i=0; i<allQueryCharts.length; i++) {
         //console.log($(allQueryCharts[i]).hasClass("heatmap"))
-        if ($(allQueryCharts[i]).find(".chart-container").hasClass("barchart")) {
+        if ($(allQueryCharts[i]).find(".chart-container").hasClass("barchart") |
+            $(allQueryCharts[i]).find(".chart-container").hasClass("barchart-rank")) {
             //qcID = $(allQueryCharts[i]).attr("qcID");
             qID = $(allQueryCharts[i]).find(".chart-container").attr("qID");
             //console.log(qcID+" "+qID);
-            resizeRect(qcID,qID,"query");
-            resizeRect(qcID,qID,"query");
+            var currentQCID = allQueryCharts[i].getAttribute("qcID");
+            resizeRect(currentQCID,qID,"query");
+            resizeRect(currentQCID,qID,"query");
         }
         if ($(allQueryCharts[i]).find(".chart-container").hasClass("heatmap")) {
             //console.log("heatmap");
@@ -64,7 +66,7 @@ function resizeQueryElements(qcID){
             $(allQueryCharts[i]).find(".panel").css("padding-bottom","10px");
         }
         if ($(allQueryCharts[i]).find(".chart-container").hasClass("stacked")) {
-            d3.select(allQueryCharts[i]).selectAll(".stackedRect")
+            d3.select(allQueryCharts[i]).selectAll(".stackedTotalRect")
             .attr("width",function(){
                 return parseInt($(this).parent().css("width"))+1;
             })
@@ -73,6 +75,18 @@ function resizeQueryElements(qcID){
             })
             .attr("y",function(){
                 return parseInt($(this).parent().css("height"))/4;
+            });
+
+            d3.select(allQueryCharts[i]).selectAll(".stackedBrushedRect")
+            .attr("width",function(d){
+                if ($(this).siblings()[0].__data__ == 0) return 0;
+                else return d/$(this).siblings()[0].__data__*(parseInt($(this).parent().css("width"))+1);
+            })
+            // .attr("height",function(){
+            //     return parseInt($(this).parent().css("height"))/2;
+            // })
+            .attr("y",function(){
+                return parseInt($(this).parent().css("height"))/6;
             });
 
             d3.select(allQueryCharts[i]).selectAll(".stackedLegend")

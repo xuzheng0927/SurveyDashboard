@@ -15,6 +15,10 @@ function createQueryBarchart(qcID) {
 				$("#query-chart"+qcID+" .chart-container").addClass("histogram");
 				createQueryHistogram(qcID, qID[0]);
 			}
+			else if (surveyDataTable[sID][1][qID[0]] == "Ranking Response") {
+				$("#query-chart"+qcID+" .chart-container").addClass("barchart-rank");
+				createBarChart(qcID,qID,sID,RespType,"query");
+			}
 			else {
 				$("#query-chart"+qcID+" .chart-container").addClass("barchart");
 				createBarChart(qcID,qID,sID,RespType,"query");	
@@ -49,6 +53,11 @@ function createQueryHistogram(qcID,qID) {
 	else var currentContainer = $("#query-chart"+qcID+" .chart-container");
 	currentContainer.append($("<svg class='histChart' style='width:100%;height:100%'></svg>"));
 	drawQueryHistogram(qcID, qID);
+	if (qcID == 0) adjustSMPanelSize(qID);
+
+	currentContainer.click(function(evt){
+		if(evt.target.tagName == "svg") clearBrushing(sID);
+	});
 }
 
 function drawQueryHistogram(qcID, qID) {
@@ -124,6 +133,8 @@ function drawQueryHistogram(qcID, qID) {
 	for (var i=0; i<surveyDataTable[window.sID].length-2; i++) {
 		if (surveyDataTable[window.sID][i+2][qID] < xMin & surveyDataTable[window.sID][i+2][qID] != null) xMin = surveyDataTable[window.sID][i+2][qID];
 	}
+	//xMin = getClosetMin(xMin,xMax);
+	xMin = Math.min.apply(null,currentResponses) + currentResponses[0] - currentResponses[1];
 
 	var yMax = Math.max.apply(null,histogramData);
 	var yMin = Math.min.apply(null,histogramData);
@@ -182,7 +193,7 @@ function drawQueryHistogram(qcID, qID) {
 		return SVGHeight * (1 - marginBottom) - (d.value - yaxisMin) / (yaxisMax - yaxisMin) * histHeight;
 	})
 	.attr("width", function(d) {
-		console.log(d.max+" "+d.min);
+		//console.log(d.max+" "+d.min);
 		return (d.max - d.min) / (xaxisMax - xaxisMin) * histWidth;
 	})
 	.attr("height", function(d) {

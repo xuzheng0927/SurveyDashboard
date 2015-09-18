@@ -12,7 +12,8 @@ default_sm_height=180;
 default_smcon_height=113;
 resize_grid_y=50;
 overview_query_class = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-//query_container_class = "col-lg-11 col-md-11 col-sm-11 col-xs-11";
+query_panel_class = "col-lg-6 col-md-6 col-sm-12 col-xs-12";
+full_width_class = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
 
 // Function to return a panel container DOM with specified ID
 function newColumnDOM(ID) {
@@ -74,16 +75,16 @@ function newOverviewDOM(pID) {
 // }
 
 function newQueryChartDOM(qcID) {
-    var DOMstring = '<div id="query-chart'+qcID+'" class="query-chart col-lg-6" qcID='+qcID+' style="padding:5px">';
+    var DOMstring = '<div id="query-chart'+qcID+'" class="query-chart '+query_panel_class+'" qcID='+qcID+' style="padding:5px">';
 
-    DOMstring += '<div class="panel panel-primary col-lg-12" style="padding:0px;height:100%;border-color:black;">';
+    DOMstring += '<div class="panel panel-primary '+full_width_class+'" style="padding:0px;height:100%;border-color:black;">';
 
-    DOMstring += '<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="position:absolute;z-index:100">';
+    DOMstring += '<div class="'+full_width_class+'" style="position:absolute;z-index:100">';
     DOMstring += '<button type="button" class="close pull-right sm-panel-close" aria-label="Close">';
     DOMstring += '<span aria-hidden="true">×</span><span class="sr-only">Close</span></button>';
     DOMstring += '</div>';
 
-    DOMstring += '<div class="col-lg-12 chart-container no-drag" style="height:200px"></div>';
+    DOMstring += '<div class="'+full_width_class+' chart-container no-drag" style="height:200px"></div>';
 
     DOMstring += '</div>';
     DOMstring += '</div>';
@@ -169,7 +170,8 @@ function newQuestionSelectorDOM(pID) {
         var questionDetected = false;
 
         for (q in questionList) {
-            var questionText = questionList[q].length > 80 ? questionList[q].substring(0,80)+"..." : questionList[q];
+            //var questionText = questionList[q].length > 80 ? questionList[q].substring(0,80)+"..." : questionList[q];
+            var questionText = questionList[q];
             DOMstring += '<option id = "panel'+pID+'-selector-'+q+'" value = '+q+' title="'+questionList[q]+'">'+q+':'+questionText+'</option>';
         }
     }

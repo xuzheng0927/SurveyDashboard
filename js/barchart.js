@@ -8,7 +8,8 @@ text_cut_thres = 16;
 
 function createBarChart(pID, qID, sID, RespType) {
 	//var currentResponseList = surveyResponseAnswer[sID]["Q"+qID];
-	//console.log(sID+" "+qID);
+	console.log(pID+" "+sID+" "+qID);
+	//qID = "Q"+qID
 
 	var currentResponseList = surveyResponseAnswer[sID][qID];
 	var currentSMPanel = $("#panel"+pID+"-sm"+qID);

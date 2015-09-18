@@ -88,8 +88,10 @@ function getResponseAnswer(json) {
 			}
 			var maxInArray = Math.max.apply(null,fullArray);
 			var minInArray = Math.min.apply(null,fullArray);
-			//console.log(fullArray+" "+maxInArray+" "+minInArray);
 			//var binValues = new Array();
+
+			maxInArray = getClosestMax(maxInArray);
+			minInArray = getClosetMin(minInArray,maxInArray);
 			for (var i=0; i < binNum; i++) {
 				responseAnswerList[q][i] = minInArray + (maxInArray - minInArray) / binNum * (i+1);
 			}
@@ -138,5 +140,23 @@ function syncResponseWithDA() {
 				}
 			}
 		}
+	}
+}
+
+function getClosestMax(num) {
+	var count = 0;
+	var newMax = 1;
+	var multiplyBy = [2,2.5,2];
+	while (newMax < num) {
+		newMax = newMax * multiplyBy[count % multiplyBy.length];
+		count ++;
+	}
+	return newMax;
+}
+
+function getClosetMin(num,maxNum) {
+	var thresholds = [0.8,0.5/0.8,0.2/0.5,0];
+	for (var i=0; i<thresholds.length; i++) {
+		if (num >= maxNum * thresholds[i]) return maxNum * thresholds[i];
 	}
 }

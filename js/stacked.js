@@ -99,6 +99,11 @@ function drawQueryStacked(qcID, qID) {
 			//syncStackedBars(qcID);
 		}
 	});
+
+	currentContainer.click(function(evt){
+		console.log(evt.target.tagName == "DIV")
+		if(evt.target.tagName == "DIV" | evt.target.tagName == "svg") clearBrushing(window.sID);
+	});
 }
 
 function newStackedDOM(qcID, sID, qID) {
@@ -188,13 +193,14 @@ function drawStackedBars(qcID, qID, stackedDIV, respHistogram, respList) {
 	for (var i=0; i<stackedSVGs.length; i++) {
 		$(stackedSVGs[i]).parent().css("width",respHistogram[i]/sumHistogram*100+"%");
 
-		d3.select(stackedSVGs[i]).selectAll(".stackedRect")
-		.attr("cursor","move")
+		d3.select(stackedSVGs[i]).selectAll(".stackedTotalRect")
 		.data([respHistogram[i]])
 		.enter()
 		.append("rect")
-		.attr("class","stackedRect")
-		.attr("resp",respList[i])
+		.attr("class","stackedTotalRect")
+		.attr("cursor","pointer")
+		.attr("qID",qID)
+		.attr("response",respList[i])
 		.attr("x",0)
 		.attr("y",SVGHeight/4)
 		.attr("width",parseInt($(stackedSVGs[i]).css("width"))+1)
@@ -205,7 +211,24 @@ function drawStackedBars(qcID, qID, stackedDIV, respHistogram, respList) {
 		})
 		.attr("stroke","black")
 		.attr("stroke-width",1)
+		.attr("onclick",function(d){
+			return 'brushAllCharts('+window.sID+',"'+qID+'","'+respList[i]+'",0,this);'
+		})
 		.append("title").text(function(d){return respList[i]+": "+d+" response(s)"})
+
+		d3.select(stackedSVGs[i]).selectAll(".stackedBrushedRect")
+		.data([0])
+		.enter()
+		.append("rect")
+		.attr("class","stackedBrushedRect")
+		.attr("cursor","pointer")
+		.attr("response",respList[i])
+		.attr("x",0)
+		.attr("y",SVGHeight/6)
+		.attr("width",0)
+		.attr("height",1)
+		.attr("onclick","clearBrushing(window.sID)")
+		.append("title");
 	}
 }
 
@@ -252,7 +275,7 @@ function drawStackedLegend(qcID, daID) {
 }
 
 function syncStackedBars(qcID) {
-	var allStackedBars = $("#query-chart"+qcID+" .stackedRect");
+	var allStackedBars = $("#query-chart"+qcID+" .stackedTotalRect");
 	var allLegends = $("#query-chart"+qcID+" .stackedLegend");
 	var allStackedResps = $("#query-chart"+qcID+" .stackedResp");
 	var currentStackedBars, currentRespWording, lastSibling, colorList;
@@ -260,7 +283,7 @@ function syncStackedBars(qcID) {
 	allStackedBars.parent().parent().fadeOut("normal",function(){
 		for (var i=0; i<allLegends.length; i++) {
 			currentRespWording = allStackedResps[i].__data__;
-			currentStackedBars = $("#query-chart"+qcID+" .stackedRect[resp='"+currentRespWording+"']");
+			currentStackedBars = $("#query-chart"+qcID+" .stackedTotalRect[response='"+currentRespWording+"']");
 			currentColor = $(allLegends[i]).attr("fill");
 
 			currentStackedBars.attr("fill",currentColor);

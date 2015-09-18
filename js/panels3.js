@@ -434,18 +434,19 @@ function updateDefaultChart(pID) {
     var currentOptions = $("#panel"+pID+"-selector").find("option");
 
     for (var i=0; i<currentOptions.length;i++){
-        var qID = i+1;
-        var nextSmallMultiplePanel = newSmallMultiplePanelDOM(pID,i+1);
+        //var qID = i+1;
+        var qID = currentOptions[i].value;
+        var nextSmallMultiplePanel = newSmallMultiplePanelDOM(pID,qID);
         nextSmallMultiplePanel.find(".panel-heading").text($(currentOptions[i]).text());
         nextSmallMultiplePanel.find(".panel-heading").attr("title",$(currentOptions[i]).text());
         //$("#panel"+pID+"-sm"+(i+1)+'-heading').text($(currentOptions[i]).text());
         nextSmallMultiplePanel.appendTo("#panel"+pID+"-chart-area");
         if (surveyResponseAnswer[currentSurveyIndex][currentOptions[i].value] != null) {
             nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
-            //createBarchart(pID,qID,currentSurveyIndex);
+            createBarChart(pID,qID,currentSurveyIndex);
         }
         else {
-            //createWordCloud(pID,qID,currentSurveyIndex);
+            createWordCloud(pID,qID,currentSurveyIndex);
         }
     }
 

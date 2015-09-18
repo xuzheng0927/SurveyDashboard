@@ -159,6 +159,7 @@ function createBarChart(pID, qID, sID, RespType, ChartType) {
 				return 'brushAllCharts('+sID+',"'+qID+'",{"lobound":'+this.getAttribute("lobound")+',"upbound":'+this.getAttribute("upbound")+'},0,this);';
 			}
 			else if (RespType != "Ranking Response") return 'brushAllCharts('+sID+',"'+qID+'","'+currentResponseList[i]+'",0,this);';
+			else return 'brushAllCharts('+sID+',"'+qID+'","'+currentResponseList[i]+'",0,this,"ranking");';
 		})
 		.append("title").text(function(d){
 			if (RespType == "Ranking Response") {
@@ -168,10 +169,13 @@ function createBarChart(pID, qID, sID, RespType, ChartType) {
 		});
 
 		d3.select(newResponseBar.find("svg")[0]).selectAll(".brushedRect")
-		.data(RespType=="Ranking Response" ? currentRankData[i] : [currentRespHistogram[i]])
+		//.data(RespType=="Ranking Response" ? [0] : [currentRespHistogram[i]])
+		.data([0])
 		.enter()
 		.append("rect")
 		.attr("class","brushedRect")
+		.attr("response",currentResponseList[i])
+		.attr("rank",RespType=="Ranking Response" ? [currentRankData[i]] : null)
 		.attr("cursor","pointer")
 		.attr("brushed","false")
 		.attr("x",newSVGWidth*bar_offset_ratio)
@@ -423,7 +427,11 @@ function resizeRect(pID, qID, ChartType) {
 						//return newSVGWidth*d/maxValue*bar_svg_width_ratio;
 						return parseInt($(this).parent().css("width"))*d/maxValue*bar_svg_width_ratio;
 					}
-					else return 0;
+					//else return 0;
+					else {
+						console.log(d)
+						return parseInt($(this).parent().css("width"))*d/maxValue*bar_svg_width_ratio;
+					}
 				}
 				else {
 					if ($(this).attr("brushed") == "false") return 0;

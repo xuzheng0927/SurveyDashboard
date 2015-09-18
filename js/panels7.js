@@ -58,6 +58,7 @@ function addNewPanel() {
         item: ".query-chart",
         cancel: "rect"
     })
+
 }
 
 function addNewQueryChart() {
@@ -79,12 +80,12 @@ function addNewQueryChart() {
     nextQuestionArea.prependTo(nextQueryChart.find(".panel"));
     nextQuestionSelector.appendTo(nextQuestionArea);
     nextQueryHeader.prependTo(nextQueryChart.find(".panel"));
-    nextSurveyArea.hide();
+    nextSurveyArea.hide();    
 
-    addOptionTags(nextSurveyArea.find(".surveyselector"));
-
-    $(".selectpicker").selectpicker("refresh");
+    nextQuestionArea.find(".selectpicker").selectpicker("refresh");
     var query_width = parseInt($("#query-area").css("width"))
+
+    addOptionTags(nextQuestionArea.find(".question-selector"));
 
     nextQueryChart.resizable({
         maxWidth: query_width,
@@ -313,6 +314,10 @@ $(window).click(function(event){
 
     if ($(event.target).attr("href") == "#query-area") setTimeout(function() {resizeQueryElements();},150)
 })
+
+document.body.onresize=function(){
+    resizeQueryElements();
+}
 
 $('#panels').on('click','[href="overview-area"]', function(event) {
     updatePanelBySurveyChange(0);
@@ -631,6 +636,11 @@ function addOptionTags(selector) {
     for (var i=0; i<allOptions.length; i++) {
         $(allSpans[i]).attr("title",$(allOptions[i]).attr("title"));
     }
+    allSpans.css("width","97%")
+    allSpans.css("display","block")
+    allSpans.css("white-space","pre-wrap")
+    allSpans.css("word-wrap","break-word")
+    allSpans.css("word-break","normal")
 }
 
 function adjustParentSize(panel) {
@@ -761,7 +771,7 @@ function createQueryChart(sID, qID, qcID) {
     }
 
     if (window.brushSettings[sID] instanceof Object) {
-        brushAllCharts(sID,window.brushSettings[sID].qID,window.brushSettings[sID].response,$("#query-area"),window.brushSettings[sID].clickedbar);
+        brushAllCharts(sID,window.brushSettings[sID].qID,window.brushSettings[sID].response,$("#query-area"),window.brushSettings[sID].clickedbar,window.brushSettings[sID].resptype);
     }
 
     function getQueryHeaderText(qID) {
