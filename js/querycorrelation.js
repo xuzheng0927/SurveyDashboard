@@ -21,7 +21,7 @@ function drawCorrelationMatrix(qcID, qID) {
 	for (var i=0; i<qID.length; i++){
 		addQueryWording(qcID,window.sID,qID[i],$(currentContainer.find(".correwording")[i]))
 	}
-	currentContainer.find(".correwording").css("cursor","default");
+	currentContainer.find(".correwording text").css("cursor","default");
 
 	//drawCorreMatrixGrid(qcID, qID);
 
@@ -54,17 +54,30 @@ function drawCorrelationMatrix(qcID, qID) {
 	.enter()
 	.append("rect")
 	.attr("class","correGrid")
+	.attr("cursor",function(d){
+		if (d.qID1 != d.qID2) return "pointer";
+	})
 	.attr("x",function(d){
 		return d.x * gridWidth;
 	})
 	.attr("y",function(d){
 		return d.y * gridHeight;
 	})
+	.attr("qID1",function(d) {
+		return d.qID1;
+	})
+	.attr("qID2",function(d) {
+		return d.qID2;
+	})
 	.attr("width", gridWidth - 1)
 	.attr("height", gridHeight)
 	.attr("fill", function(d) {
 		if (d.value == null) return "white";
-		else return correlationColor(d.value,correMaxMin);
+		else if (d.qID1 != d.qID2) return correlationColor(d.value,correMaxMin);
+	})
+	.attr("style",function(d) {
+		$(this).parent().addClass("pattern-swatch");
+		if (d.qID1 == d.qID2 & d.qID1 != null) return "fill: url(#crosshatch) #fff;"
 	})
 	.attr("stroke","black")
 	.attr("stroke-width",1)
@@ -74,9 +87,14 @@ function drawCorrelationMatrix(qcID, qID) {
 	})
 
 	currentContainer.find(".correGrid").click(function() {
-		$(this).parent().find(".correGrid").attr("stroke-width",1).attr("stroke","black").attr("stroke-opacity",1);
-		$(this).attr("stroke-width",3).attr("stroke","red").attr("stroke-opacity",0.5);
-		createQueryScatter(qcID,"aside",[this.__data__["qID1"],this.__data__["qID2"]]);
+		if (this.__data__["qID1"] != null & this.__data__["qID2"] != null & (this.__data__["qID1"] != this.__data__["qID2"])) {
+			$(this).parent().find(".correGrid").attr("stroke-width",1).attr("stroke","black").attr("stroke-opacity",1);
+			$(this).attr("stroke-width",3).attr("stroke","red").attr("stroke-opacity",0.5);
+			createQueryScatter(qcID,"aside",[this.__data__["qID1"],this.__data__["qID2"]]);
+			if (window.brushSettings[sID] instanceof Object) {
+        		brushAllCharts(sID,window.brushSettings[sID].qID,window.brushSettings[sID].response,$("#query-area"),window.brushSettings[sID].clickedbar,window.brushSettings[sID].resptype);
+    		}
+		}
 	})
 
 	d3.select(currentCorrSVG[0]).selectAll(".correMatrixWording")
@@ -112,6 +130,8 @@ function drawCorrelationMatrix(qcID, qID) {
 	}
 
 	//createQueryScatter(qcID,"aside",[qID[0],qID[1]]);
+	d3.select(currentCorrSVG.find("[qID1='"+scatterqID[0]+"'][qID2='"+scatterqID[1]+"']")[0])
+	.attr("stroke-width",3).attr("stroke","red").attr("stroke-opacity",0.5);
 	createQueryScatter(qcID,"aside",scatterqID);
 }
 
@@ -132,7 +152,7 @@ function getCorrelationMatrix(qID) {
 		}
 		if (validFlag == true) {
 			for (var j=0; j<qID.length; j++) {
-				dataArrays[j][dataArrays[j].length] = surveyDataTable[window.sID][i][qID[j]];
+				dataArrays[j][dataArrays[j].length] = parseFloat(surveyDataTable[window.sID][i][qID[j]]);
 			}
 		}
 	}
@@ -155,7 +175,9 @@ function getCorrelationMatrix(qID) {
 					sumY2 += dataArrays[i2][j]*dataArrays[i2][j];
 				}
 				//console.log(sumX+" "+sumY+" "+sumXY+" "+sumX2+" "+sumY2);
-				correMatrix[i1][i2] = (n * sumXY - sumX * sumY) / Math.sqrt(n * sumX2 - sumX * sumX) / Math.sqrt(n * sumY2 - sumY * sumY);
+				if (Math.sqrt(n * sumX2 - sumX * sumX) == 0) correMatrix[i1][i2] = 0;
+				else if (Math.sqrt(n * sumY2 - sumY * sumY) == 0) correMatrix[i1][i2] = 0;
+				else correMatrix[i1][i2] = (n * sumXY - sumX * sumY) / Math.sqrt(n * sumX2 - sumX * sumX) / Math.sqrt(n * sumY2 - sumY * sumY);
 			}
 		}
 	}

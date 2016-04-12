@@ -29,6 +29,7 @@ function drawQueryHeatmap(qcID, qID1, qID2){
 	var respNum1 = surveyResponseAnswer[window.sID][qID1].length;
 	var respNum2 = surveyResponseAnswer[window.sID][qID2].length;
 	var daID;
+	var sID = window.sID;
 	currentContainer.css("height",(respNum2+2)*cell_height);
 	for (var i=0; i<surveyDistinctAnswer[window.sID].length; i++) {
 		if (equalArrays(surveyDistinctAnswer[window.sID][i],surveyResponseAnswer[window.sID][qID1])) {
@@ -81,7 +82,7 @@ function drawQueryHeatmap(qcID, qID1, qID2){
 	// q2Resp.children().addClass("query-heatmap-cell");
 	// q2Col.children().last().append(q2Resp);
 
-	currentContainer.append(newQueryHeatMapDOM(qcID,window.sID,qID1,qID2,daID1,daID2));
+	currentContainer.append(newQueryHeatMapDOM(qcID,sID,qID1,qID2,daID1,daID2));
 	addQ1Wording(qcID,window.sID,qID1);
 	addQ2Wording(qcID,window.sID,qID2);
 	addQ1Resp(qcID,window.sID,qID1,daID1);
@@ -92,6 +93,17 @@ function drawQueryHeatmap(qcID, qID1, qID2){
 	var con_height = parseInt($("#query-chart"+qcID+" .chart-container").css("height"));
 	$("#query-chart"+qcID).css("height",quest_height+con_height+20);
 	$("#query-chart"+qcID+" .panel").css("height","100%");
+
+	if (daID1 == daID2) {
+		$("#query-chart"+qcID).find(".another-btn").css("display","inline");
+		$("#query-chart"+qcID).find(".another-btn").click(function(){
+			createQueryStacked(qcID);
+			if (window.brushSettings[sID] instanceof Object) {
+        		brushAllCharts(sID,window.brushSettings[sID].qID,window.brushSettings[sID].response,$("#query-area"),window.brushSettings[sID].clickedbar,window.brushSettings[sID].resptype);
+    		}
+		})
+	}
+	else $("#query-chart"+qcID).find(".another-btn").css("display","none");
 }
 
 function newQueryHeatMapDOM (qcID, sID, qID1, qID2, daID1, daID2) {

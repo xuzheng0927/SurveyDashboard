@@ -104,6 +104,14 @@ function drawQueryStacked(qcID, qID) {
 		console.log(evt.target.tagName == "DIV")
 		if(evt.target.tagName == "DIV" | evt.target.tagName == "svg") clearBrushing(window.sID);
 	});
+
+	if (qID.length == 2) {
+		$("#query-chart"+qcID).find(".another-btn").css("display","inline");
+		$("#query-chart"+qcID).find(".another-btn").click(function(){
+			createQueryHeatmap(qcID);
+		});
+	}
+	else $("#query-chart"+qcID).find(".another-btn").css("display","none");
 }
 
 function newStackedDOM(qcID, sID, qID) {
@@ -212,7 +220,7 @@ function drawStackedBars(qcID, qID, stackedDIV, respHistogram, respList) {
 		.attr("stroke","black")
 		.attr("stroke-width",1)
 		.attr("onclick",function(d){
-			return 'brushAllCharts('+window.sID+',"'+qID+'","'+respList[i]+'",0,this);'
+			return 'brushAllCharts('+window.sID+',["'+qID+'"],"'+respList[i]+'",0,this);'
 		})
 		.append("title").text(function(d){return respList[i]+": "+d+" response(s)"})
 

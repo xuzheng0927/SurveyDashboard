@@ -6,13 +6,15 @@ function equalArrays(array1, array2) {
 	}
 	else {
 		var isEqual = true;
+		var foundInA2;
 		for (var i1 = 0; i1 < array1.length; i1++){
-			isEqual = false;
+			foundInA2 = false;
 			for (var i2 = 0; i2 < array2.length; i2++){
 				if (array1[i1] == array2[i2]) {
-					isEqual = true;
+					foundInA2 = true;
 				}
 			}
+			isEqual = (isEqual & foundInA2);
 			/*if (array1[i] != array2[i]) {
 				isEqual = false;
 			}*/

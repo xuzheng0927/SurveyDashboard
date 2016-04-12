@@ -1,641 +1,359 @@
-// Global variable declaration
-window.focusID = 0;
-window.previousID = 0;
-window.maxID = 0;
-window.maxSelectorID = new Array();
-window.brushSettings = new Array();
-//panel_col_class="col-lg-12";
+// Global variable (stored as window's attributes) declaration
+window.currentPID = 0;              // PID refers to panel ID, overview tab uses 0 and charts in query tab use 1,2,3 etc.
+window.maxPID = 0;                  // Record the current maximum CID
+window.brushSettings = new Array(); // This array keeps brushing parameters for different surveys
+// [Outside variables]      surveyDataTable     :   initialized in main.js, stores all raw data of all surveys
+//                          surveyResponseAnswer:   initialized in main.js, stores all categorical responses and numeric bins
+//                          sm_panel_class      :   defined in panelsDOM7.js, Bootstrap class for different types of small multiple charts
 
-function addNewPanel() {
-    // Record IDs, focus ID become previous ID, max ID is increased by 1 becomes the focus ID
-    // window.previousID = window.focusID;
-    // window.maxID += 1;
-    // window.focusID = window.maxID;
-
-    // If there is more than one panels, dehighlight the previous focused panel
-    /*if (window.previousID!=0){
-        dehighlightPanel(window.previousID);       
-    }*/
-
-    // Create new panel DOM object
-    // var nextColumn = newColumnDOM(focusID);
-    // var nextPanel = newPanelDOM(focusID);
-    var nextTab = newTabDOM(focusID);
-    //var nextTabContent = newTabContentDOM();
-    var nextOverview = newOverviewDOM(focusID);
-
-    var nextSurveyArea = newSurveyAreaDOM(focusID);
-    var nextQuestionArea = newQuestionAreaDOM(focusID);
-    //var nextChartSelect = newChartSelectDOM(focusID);
-    var nextChartArea = newChartAreaDOM(focusID);
-
-    // Append the column to panels
-    //nextColumn.prependTo("#panels");
-
-    // Append the panel to parent column
-    //nextPanel.appendTo(nextColumn);
+// This function initializes layout of the whole interface and adds small multiples for the default survey
+// [Outside functions]      newTabDOM(pID)      :    defined in panelsDOM7.js
+//                          newSurveyArea(pID)  :    defined in panelsDOM7.js
+//                          newQuestionArea(pID):    defined in panelsDOM7.js
+//                          newChartArea(pID)   :    defined in panelsDOM7.js
+//                          sortable()          :    defined in open source library jQuery UI
+function initializeInterface() {
+    // Create DOM "nextTab" containing switchable overview tab and query tab
+    // And append "nextTab" to the top container named "panels"
+    // Please note that currentPID is 0 here and will be assigned as PID of the whole overview tab
+    var nextTab = newTabDOM(currentPID);
     nextTab.appendTo("#panels");
-    //nextTabContent.appendTo("#panels");
-    nextOverview = nextTab.find("#overview-area");
 
+    // Get the overview tab DOM as jquery object "nextOverview"
+    nextOverview = nextTab.find("#overview-area");
+    // Create DOM "newSurveyArea" (survey selector), "nextQuestionArea" (question selector) and "nextChartArea" (blank area to put in charts)
+    // And then append the three DOM to overview tab
+    var nextSurveyArea = newSurveyAreaDOM(currentPID);
+    var nextQuestionArea = newQuestionAreaDOM(currentPID);
+    var nextChartArea = newChartAreaDOM(currentPID);
     nextSurveyArea.appendTo(nextOverview);
     nextQuestionArea.appendTo(nextOverview);
-    //nextChartSelect.appendTo(nextOverview);
     nextChartArea.appendTo(nextOverview);
 
+    // Activate Bootstrap selectpicker features
     $(".selectpicker").selectpicker();
 
-    updatePanelBySurveyChange(focusID);
-    //nextColumn.hide();
+    // Create all small multiples for the default selected survey (the first one)
+    updateSmallMultiples(currentPID);
     
-    addOptionTags($("#panel"+focusID+"-surveyselector"));
+    // Add tags (tooltips) for options for survey selector in the Bootstrap selectors
+    // Note: this function needs to be run every time after a selectpicker() function is executed
+    addOptionTags($("#panel"+currentPID+"-surveyselector"));
 
+    // Update the current survey ID (sID)
     window.sID = $("#overview-area .surveyselector").val();
 
-    //$("#panel"+focusID).css("margin","0");
-    //nextColumn.animate({width:'toggle',height:'toggle'});
+    // Although no chart is in query tab yet, set query tab as "sortable" (featured by jQuery UI) for future use
+    // If charts are added in query tab later, they will be draggable and reorderable
     $("#query-area").sortable({
-        item: ".query-chart",
-        cancel: "rect"
-    })
-
+        item: ".query-chart",   // All chart panels in query tab will have "query-chart" class
+        cancel: ".no-drag"      // All elements that shouldn't be dragging handles will have "no-drag" class
+    });
 }
 
+// This function add a new query chart into query tab
+// [Outside functions]      newQueryChartDOM(pID)   :    defined in panelsDOM7.js
+//                          newSurveyArea(pID)      :    defined in panelsDOM7.js
+//                          newQuestionArea(pID)    :    defined in panelsDOM7.js
+//                          newQuestionSelector(pID):    defined in panelsDOM7.js
+//                          resizable()             :    defined in open source library jQuery UI
+//                          createQueryEmpty(pID)   :    defined in empty.js
 function addNewQueryChart() {
-    // Record IDs, focus ID become previous ID, max ID is increased by 1 becomes the focus ID
-    window.previousID = window.focusID;
-    window.maxID += 1;
-    window.focusID = window.maxID;
+    // Record IDs, maximum panel ID is increased by 1 becomes the current panel ID
+    window.maxPID += 1;
+    window.currentPID = window.maxPID;
 
-    var nextQueryChart = newQueryChartDOM(focusID);
-    var nextSurveyArea = newSurveyAreaDOM(focusID);
-    nextSurveyArea.find(".surveyselector").val(window.sID);
-    var nextQuestionArea = newQuestionAreaDOM(focusID);
-    var nextQuestionSelector = newQuestionSelectorDOM(focusID);
-    var nextQueryHeader = newQueryHeaderDOM(focusID);
-
+    // Create DOMs of new query chart panel and append it to query tab
+    var nextQueryChart = newQueryChartDOM(currentPID);
     nextQueryChart.appendTo($("#query-area"));
+
+    // Create DOM of new survey selector, set value of the new survey selector as the current sID
+    // Then hide the survey selector because sID can only be changed from overview tab
+    var nextSurveyArea = newSurveyAreaDOM(currentPID);
+    nextSurveyArea.find(".surveyselector").val(window.sID);
+    nextSurveyArea.hide(); 
+
+    // Create DOMs of new question selector and query chart header
+    var nextQuestionArea = newQuestionAreaDOM(currentPID);
+    var nextQuestionSelector = newQuestionSelectorDOM(currentPID); // Note: this DOM adding cannot be omitted in this function!
+    var nextQueryHeader = newQueryHeaderDOM(currentPID);
+    
+    // Add survey selector, question selector and header into the upper part of chart panel
     nextSurveyArea.prependTo(nextQueryChart.find(".panel"));
-    //nextQuestionArea.appendTo(nextQueryChart);
     nextQuestionArea.prependTo(nextQueryChart.find(".panel"));
     nextQuestionSelector.appendTo(nextQuestionArea);
     nextQueryHeader.prependTo(nextQueryChart.find(".panel"));
-    nextSurveyArea.hide();    
-
+      
+    // Activate Bootstrap select features on all new added selectors
+    // And add tags (tooltips) to new selectors
     nextQuestionArea.find(".selectpicker").selectpicker("refresh");
-    var query_width = parseInt($("#query-area").css("width"))
-
     addOptionTags(nextQuestionArea.find(".question-selector"));
 
+    // Get width of query tab
+    var query_width = parseInt($("#query-area").css("width"));
+    // Activate resizable features on the new query chart
     nextQueryChart.resizable({
-        maxWidth: query_width,
+        maxWidth: query_width,                  // Please note that the maximum width cannot exceed the width of query tab
         minWidth: 350,
         minHeight: 250,
-        alsoResize: $(this).find('.panel'),
+        alsoResize: $(this).find('.panel'),     // Each chart has an embedded ".panel" container with identical size and should be resized together
         resize: function (event, ui) {
-            adjustQCSize($(this).attr("qcID"));
+            adjustQCSize($(this).attr("qcID")); // During resizing, all SVG elements will be resized to fit the new size of chart
         },
         stop: function (event, ui) {
-            adjustQCSize($(this).attr("qcID"));
+            adjustQCSize($(this).attr("qcID")); // Upon finishing resizing, all SVG elements will be resized to fit the new size of chart
         }
     });
 
-    //adjustQCSize($(this).attr("qcID"));
-    createQueryEmpty(window.focusID);
+    // Create an empty query chart
+    createQueryEmpty(window.currentPID);
 }
 
-$('#btnAdd').click(function (e) {
-    addNewPanel();
-});
-
+// Response function upon clicking on "+" button (will add a new query chart)
 $('#panels').on('click','.add-btn',function() {
     addNewQueryChart();
 })
 
+// Hide or show the "+" button (used to add query chart) in the right top corner
+// THis is because the "+" button only shows when query tab is visible
 $('#panels').on('click','[href="#overview-area"]',function() {
     $(".add-btn").hide();
 })
-
 $('#panels').on('click','[href="#query-area"]',function() {
     $(".add-btn").show();
 })
 
-// close or delete a panel, called when users click on the 'X' icon
+// Function to close or delete a chart panel in query tab, called when users click on the 'X' icon
 $('#panels').on('click', '.panel-close', function() {
     $(this).parent().parent().animate({width:'toggle',height:'toggle'},"slow",function(){
         $(this).remove();
     });
-    //$(this).parent().parent().remove();
-    //highlightPanel(topID);
-    if ($("panels").children('panel-container').length > 0) {
-        window.focusID = $("#panels").children().first().attr("pID");
-        highlightPanel(window.focusID);
-    }
-    //$(this).parent().parent().remove();
 });
 
+// Function to close a small multiple chart in overview tab
+// [Outside function]   removeElement :     defined in general.js
 $('#panels').on('click', '.sm-panel-close', function() {
-    var panelID = $(this).parent().parent().parent().attr("pID");
-    //var questionID = $(this).parent().parent().parent().attr("qID");
+    // Get question ID of the small multiple and remove it from value list of the current question selector
     var valueToRemove = $(this).parent().parent().parent().attr("qID");
-    //console.log("#panel"+panelID+"-selector-Q"+questionID);
-    var newValue = removeElement(valueToRemove,$("#panel"+panelID+"-selector").val());
-    $("#panel"+panelID+"-selector").val(newValue);
-    $("#panel"+panelID+"-selector").selectpicker("refresh");
-    // var panelWidth = $(this).parent().parent().parent().css("width");
-    // var panelPadding = $(this).parent().parent().parent().css("padding");
-    // $(this).parent().parent().parent().attr("oldWidth",panelWidth);
-    // $(this).parent().parent().parent().attr("oldPadding",panelWidth);
-    $(this).parent().parent().parent().animate({width:'toggle',height:'toggle'});
-    //$(this).parent().parent().parent().animate({padding:0});
-    //$(this).parent().parent().parent().animate({width:0});
+    var newValue = removeElement(valueToRemove,$("#panel0-selector").val());
+
+    // Update question selector with new values and refresh its selectpicker counterpart
+    $("#panel0-selector").val(newValue);
+    $("#panel0-selector").selectpicker("refresh");
+    addOptionTags($("#panel0-selector"));
+
+    // Hide the small multiple
+    $(this).parent().parent().parent().animate({width:'hide',height:'hide'});
 });
 
-
+// Function to toggle setting widgets (all selectors) when clicking "gear" button
 $('#panels').on('click', '.hide-btn', function() {
-
-    // $(".survey-area").slideToggle("slow");
-    // $(".question-area").slideToggle("slow");
-
+    // Adjust visibility of borders to make sure the whole overview tab has solid top border
+    // If top border of chart area was invisible, it means selectors are to be hidden, so make it visible (solid) after hiding survey selector
+    // If top border of chart area was visible, it means selectors are to be shown, so make it invisible then show survey selector
     if ($(".chart-area").css("border-top-style") == "none") {
         $("#overview-area .survey-area").slideToggle("slow",function(){
             $(".chart-area").css("border-top-style","solid");
-            //adjustQueryChart();
-            //$(".chart-area").css("border-radius","0 4px 0 0");
         });
-        
-        // $(".chart-area").css("border-top-style","solid");
-        // $(".chart-area").css("border-radius","0 4px 0 0");
     }
     else {
         $(".chart-area").css("border-top-style","none");
-        //$(".chart-area").css("border-radius","0 0 0 0");
         $("#overview-area .survey-area").slideToggle("slow",function(){
-            //adjustQueryChart();
         });
-        // $(".question-area").slideToggle("slow");
-        // $("#overview-area .page-header").slideToggle("slow");
-        // $("#query-area .query-header").slideToggle("slow");
     }
+
+    // Simply toggle question selector, page header (in overview tab) and query chart headers because they are not affected by chart area border
     $(".question-area").slideToggle("slow");
     $("#overview-area .page-header").slideToggle("slow");
     $("#query-area .query-header").slideToggle("slow");
-
-    function adjustQueryChart(){
-    if ($("#query-area").css("display") != "none") {
-        var allQueryChart = $("#query-area .query-chart");
-        var tempCHeight, tempPHeight;
-        if ($("#query-area .question-area").css("display") == "none") {
-            for (var i=0; i<allQueryChart.length; i++) {
-                tempCHeight = parseInt($(allQueryChart[i]).css("height"));
-                tempPHeight = parseInt($(allQueryChart[i]).find(".panel").css("height"));
-                $(allQueryChart[i]).css("height",tempCHeight-44);
-                $(allQueryChart[i]).find(".panel").css("height",tempPHeight-44);
-            }
-        }
-        else {
-            for (var i=0; i<allQueryChart.length; i++) {
-                tempCHeight = parseInt($(allQueryChart[i]).css("height"));
-                tempPHeight = parseInt($(allQueryChart[i]).find(".panel").css("height"));
-                $(allQueryChart[i]).css("height",tempCHeight-44);
-                $(allQueryChart[i]).find(".panel").css("height",tempPHeight-44);
-            }
-        }
-    }
-    }
 });
 
-$('#panels').on('click', 'div div .hide-chart-btn', function() {
-    var panelID = $(this).parent().parent().attr('pID');
-    // $("#panel"+panelID+"-chart-area").attr("oldHeight",parseInt($("#panel"+panelID+"-chart-area").css("height")));
-    // $("#panel"+panelID+"-chart-area").attr("oldTop",$("#panel"+panelID+"-chart-area").position().top);    
-
-    if ($("#col"+panelID).attr("resized") == "true") {
-        //var chartAreaHeight = parseInt($("#panel"+panelID+"-chart-area").css("height"));
-        //var chartTop = $("#panel"+panelID+"-chart-area").position().top;
-        var currentColHeight = parseInt($("#col"+panelID).css("height"));
-        //var chartAreaHeight = parseInt($("#panel"+panelID+"-chart-area").attr("oldHeight"));
-        //var chartTop = parseInt($("#panel"+panelID+"-chart-area").attr("origTop"));
-        
-        if ($("#panel"+panelID+"-chart-area").css("display") == "none") {
-            $("#panel"+panelID+"-chart-area").toggle();
-            var chartAreaHeight = $("#panel"+panelID+"-chart-area").css("height");
-            $("#col"+panelID).css("height",(currentColHeight+chartAreaHeight)+"px");
-            $("#panel"+panelID).css("height",(currentColHeight+chartAreaHeight)+"px");
-        }
-        else{
-            var chartAreaHeight = parseInt($("#panel"+panelID+"-chart-area").css("height"));
-            $("#panel"+panelID+"-chart-area").toggle();
-            $("#col"+panelID).attr("chartHeight",chartAreaHeight);
-            //console.log(chartAreaHeight+" "+chartTop+" "+currentColHeight);
-
-            $("#col"+panelID).css("height",(currentColHeight-chartAreaHeight)+"px");
-            $("#panel"+panelID).css("height",(currentColHeight-chartAreaHeight)+"px");
-        }
-    }
-
-    // $("#panel"+panelID+"-chart-area").toggle();
-});
-
-$('#panels').on('click','.add-all', function() {
-    var panelID = $(this).parent().parent().parent().parent().attr('pID');
-    var allOptions = $("#panel"+panelID+"-selector option");
-    var allValues = new Array();
-    for (var i=0; i<allOptions.length; i++) allValues = allValues.concat(allOptions[i].value);
-    $("#panel"+panelID+"-selector").val(allValues);
-    $(".selectpicker").selectpicker("refresh");
-    updateChartByQuestionChange(panelID);
-});
-
-$('#panels').on('click','.rmv-all', function() {
-    var panelID = $(this).parent().parent().parent().parent().attr('pID');
-    $("#panel"+panelID+"-selector").val(null);
-    $(".selectpicker").selectpicker("refresh");
-    updateChartByQuestionChange(panelID);
-});
-
-
+// Function called when the selected survey changes in overview tab
 $('#panels').on('change','#overview-area .surveyselector', function(event) {
-    //console.log(event.target)
-    var panelID = $(this).parent().parent().parent().attr('pID');
+    // Remove all existed query charts
     $(".query-chart").remove();
+
+    // Refresh all Bootstrap selectpickers and get new sID
     $(".selectpicker").selectpicker("refresh");
     window.sID = $(this).val();
-    updatePanelBySurveyChange(0);
+
+    // Update small multiples and add a new query chart
+    updateSmallMultiples(0);
     addNewQueryChart();
 });
 
-$('#panels').on('change','#query-area .surveyselector', function(event) {
-    console.log($(this).siblings());
-    $(".query-chart").remove();
-    window.sID = $(this).val()
-
-    $(".surveyselector").val(window.sID);
-    //$(".selectpicker").selectpicker("refresh");
-
-    // $("#overview-area").addClass("active");
-    // $("#overview-area").addClass("in");
-    // $("#query-area").removeClass("active");
-    // $("#query-area").removeClass("in");
-    // $("[href='#overview-area']").attr("aria-expanded","true");
-    // $("[href='#overview-area']").parent().addClass("active");
-    // $("[href='#query-area']").attr("aria-expanded","false");
-    // $("[href='#query-area']").parent().removeClass("active");
-
-    //updatePanelBySurveyChange(0);
-    addNewQueryChart();
-    //$("[href='#overview-area']").attr("needrefresh","true");
-    window.needrefresh = "true";
-    $("body").children(".btn-group").remove();
-    //console.log($(this).siblings());
+// Function called when value of a question selector is changed in overview tab
+$('#panels').on('change','#overview-area select.question-selector', function() {
+    // Update charts in overview tab (small multiples)
+    // Will either show or hide a small multiple (see details in toggleSMByQuestionChange function)
+    toggleSMByQuestionChange();
 });
 
-// $('[type="#overview-btn"]').click(function() {
-//     if ($(this).attr("needrefresh") == "true") {
-//         console.log("refreshing");
-//         $(this).find(".surveyselector").val(window.sID);
-//         $(".selectpicker").selectpicker("refresh");
-//         updatePanelBySurveyChange(0);
-//         $(this).attr("needrefresh","false");
-//     }
-// })
-$(window).click(function(event){
-    //console.log($(event.target).attr("href"));
-    if ($(event.target).attr("href") == "#overview-area" & window.needrefresh == "true") {
-        $("#overview-area .surveyselector").val(window.sID);
-        $(".selectpicker").selectpicker("refresh");
-        $(".sm-panel").remove();
-        setTimeout(function() {
-            updatePanelBySurveyChange(0);
-            window.needrefresh = "false";
-        }, 150);
-        //window.needrefresh == "false";
-    }
-
-    if ($(event.target).attr("href") == "#query-area") setTimeout(function() {resizeQueryElements();},150)
-})
-
-document.body.onresize=function(){
-    resizeQueryElements();
-}
-
-$('#panels').on('click','[href="overview-area"]', function(event) {
-    updatePanelBySurveyChange(0);
-    $("[href='overview-area']").attr("needrefresh","false");
-});
-
-$('#panels').on('change','select.question-selector', function() {
-    var panelID = $(this).attr('pID');
-    updateChartByQuestionChange(panelID);
-});
-
+// Function called when value of a question selector is changed in query tab
 $('#panels').on('change','#query-area select.question-selector', function() {
+    // Create new query chart according new selection of questions
     createQueryChart(window.sID,$(this).val(),$(this).attr('pID'));
-    //createQueryBarchart($(this).attr('pID'));
 })
 
+// Function to give word-wrap looking to question selectors, called upon clicking on a question selector
 $('#panels').on('click','select.question-selector', function(event) {
     $(this).parent().find(".dropdown-menu").css("overflow:auto");
 });
 
-$('#panels').on('click', 'img', function() {
-    var panelID = $(this).attr('pID');
-    $(this).siblings().css("border-width","0px");
-    $(this).css("border-width","2px");
-    $("#panel"+panelID+" svg text").text($(this).attr("id"));
-});
-
-$('#panels').on('click', '.panel-container', function() {
-    setActivePanel($(this));
-});
-
+// Function called when the browser is resized
+// [Outside function]   resizeQueryElements() :     defined in resize.js
 $(window).resize(function () {
+    // If query tab is visible, resize all SVG elements in query tab
     if ($("#query-area").css("display") != "none") resizeQueryElements();
 });
 
-//highlight a panel
-function highlightPanel(ID){
-    $('#panel'+ID).removeClass('panel-default').addClass('panel-primary');
-    $('#panel'+ID+'-addbtn').removeClass('btn-default').addClass('btn-primary');
-    $('#panel'+ID+'-addallbtn').removeClass('btn-default').addClass('btn-primary');
-    //$('#panel'+ID+' .label').removeClass('label-default').addClass('label-primary');
-    $('#panel'+ID+' .sm-panel .panel-default').removeClass('panel-default').addClass('panel-primary');
-}
-
-//dehighlight a panel
-function dehighlightPanel(ID){
-    if(ID == 0){
-        return;
-    }
-    $('#panel'+ID).removeClass('panel-primary').addClass('panel-default');
-    $('#panel'+ID+'-addbtn').removeClass('btn-primary').addClass('btn-default');
-    $('#panel'+ID+'-addallbtn').removeClass('btn-primary').addClass('btn-default');
-    //$('#panel'+ID+' .label').removeClass('label-primary').addClass('label-default');
-    $('#panel'+ID+' .panel-primary').removeClass('panel-primary').addClass('panel-default');
-}
-
-function updatePanelBySurveyChange(pID) {
+// Function to update small mutiples in overview tab
+// [Outside functions]  resize()            :      defined in open source library jQuery UI
+//                      adjustSMPanelSize   :      defined in panelDOM7.js
+function updateSmallMultiples() {
+    // Get new survey ID and update window.sID and header of overview tab
     var newSurveyIndex = $("#overview-area .surveyselector").val();
     window.sID = newSurveyIndex;
     $(".page-header").text(surveyDataIndex[newSurveyIndex]+" ("+(surveyDataTable[newSurveyIndex].length-2)+" respondents)");
-    //var allSiblings = $("#col"+pID).siblings();
 
-    if (newSurveyIndex != null) {
-        //$("#panel"+panelID+"-addbtn").removeAttr("disabled");
-        //$("#panel"+panelID+"-addallbtn").removeAttr("disabled");
-        //$("#panel"+panelID+"-chart-select").show();
-        //$("#panel"+pID+"-chart-area").show();
+    // Remove exsited question selector and add a new one
+    $("#overview-area .question-selector").parent().remove();
+    var nextQuestionSelector = newQuestionSelectorDOM(0);
+    nextQuestionSelector.appendTo("#overview-area .question-area");
 
-        $("#overview-area .question-selector").parent().remove();
-        var nextQuestionSelector = newQuestionSelectorDOM(pID);
-        nextQuestionSelector.appendTo("#overview-area .question-area");
-        var nextOptions = nextQuestionSelector.find("option");
-        var nextOptionValues = new Array();
-        for (var i=0;i<nextOptions.length;i++) {
-            nextOptionValues[i] = nextOptions[i].value;
+    // Scan and store values of all options of the new question selector
+    // Then "tick" all options by assigning all option values to the selector
+    var nextOptions = nextQuestionSelector.find("option");
+    var nextOptionValues = new Array();
+    for (var i=0;i<nextOptions.length;i++) {
+        nextOptionValues[i] = nextOptions[i].value;
+    }
+    nextQuestionSelector.children().val(nextOptionValues);
+
+    // Refresh all selectpickers and add tags (tooltips)
+    $(".selectpicker").selectpicker("refresh");
+    addOptionTags(nextQuestionSelector);
+
+    // Remove all existed small multiples, re-create all small multiples in updateDefaultChart function
+    $(".sm-panel").remove();
+    updateDefaultChart();
+
+    // Make transition effect by hiding the whole chart area (instantly) and show it in fast speed
+    $("#overview-area .chart-area").hide().show("fast");
+
+    // Make all small multiples resizable
+    $(".sm-panel").resizable( {
+        // Each chart has an embedded ".panel" container with identical size and should be resized together
+        alsoResize: $(this).find('.panel'),
+        minHeight: 150,
+        minWidth: 200,
+        // Adjust position of se(horizontal and vertical) resize handle when resizing starts
+        start: function(event, ui) {
+            $(this).find(".ui-resizable-se").css("bottom","1px");
+            $(this).find(".ui-resizable-se").css("right","5px");
+        },
+        // Make extra adjustment when the small multiple panel is being resizing
+        resize: function(event, ui) {
+            adjustSMPanelSize($(this).attr("qID"));
         }
-        nextQuestionSelector.children().val(nextOptionValues);
-        $(".selectpicker").selectpicker("refresh");
-        addOptionTags(nextQuestionSelector);
-        nextQuestionSelector.parent().find(".dropdown-menu").css("overflow:auto");
+    });
 
-        //$("#panel"+pID+"-heading").text(surveyDataIndex[$("#panel"+pID+"-surveyselector").val()]+" ("+(surveyDataTable[newSurveyIndex].length-2)+ " respondents)");
-
-        // $("#panel"+pID+" .sm-panel").animate({height:"toggle"},"normal",function(){
-        //     $("#panel"+pID+" .sm-panel").remove();
-        //     updateDefaultChart(pID);
-        //     $("#panel"+pID+" .sm-panel").show("normal");
-        // });
-        // $("#panel"+pID+" .chart-area").slideUp("normal",function(){
-        //     $("#panel"+pID+" .sm-panel").remove();
-        //     updateDefaultChart(pID);
-        // });
-        $(".sm-panel").remove();
-        updateDefaultChart(pID);
-        $("#overview-area .chart-area").hide().show("fast");
-        //reorderQuestions(panelID);
-
-        $(".sm-panel").resizable( {
-            //containment: "parent",
-            //revert: true,
-            //aspectRatio: function() { return parseInt($(this).css("width")) / parseInt($(this).css("height"))},
-            //aspectRatio: 1,
-            alsoResize: $(this).find('.panel'),
-            //helper: "ui-resizable-helper",
-            //alsoResize: $(this).parent(),
-            //resize: function(event, ui) {$(this).find("svg").css("top","-67px");}
-            minHeight: 150,
-            minWidth: 200,
-            start: function(event, ui) {
-                $(this).find(".ui-resizable-se").css("bottom","1px");
-                $(this).find(".ui-resizable-se").css("right","5px");
-            },
-            resize: function(event, ui) {                   
-                
-                adjustSMPanelSize($(this).attr("qID"));
-                //console.log("keeptop:"+$(this).attr("keeptop")+" top:"+$(this).css("top")+" offset-top:"+$(this).offset().top+" csstop:"+$(this).attr("csstop"));
-                //$(this).find(".chart-container").css("height","100%");
-                //$(this).find(".chart-container").css("width","100%");
-                //var old_con_height = parseInt($(this).find(".chart-container").css("height"));
-                //var heading_height = parseInt($(this).find(".panel-heading").css("height"));
-                //$(this).find(".chart-container").css("height",(old_con_height - heading_height)+"px");
-                // if ($(this).find(".sm-panel-more").css("visibility") == "hidden") {
-                //     resizeRect($(this).attr("pID"),$(this).attr("qID"));
-                // }
-                // else {
-                //     resizeCloud($(this).attr("pID"),$(this).attr("qID"));
-                // }
-                //if (!$(this).hasClass("sm-text")) resizeRect($(this).attr("pID"),$(this).attr("qID"));
-            },
-            stop: function(event, ui) {
-                //resizeRect($(this).attr("pID"),$(this).attr("qID"),ui.originalSize,ui.size);
-                $(this).css("position","relative");
-                //console.log("keeptop:"+$(this).attr("keeptop")+" top:"+$(this).css("top")+" offset-top:"+$(this).offset().top+" csstop:"+$(this).attr("csstop"));
-                if ($(this).attr("dragged") == "yes") {
-                    $(this).css("top",parseInt($(this).css("top"))+parseInt($(this).attr("keeptop"))-$(this).offset().top);
-                    $(this).css("left",parseInt($(this).css("left"))+parseInt($(this).attr("keepleft"))-$(this).offset().left);
-                }
-                $("#col"+$(this).attr("pID")).css("height",parseInt($(this).parent().attr("height"))+$(this).attr("keeptop"));
-                $("#panel"+$(this).attr("pID")).css("height",parseInt($(this).parent().attr("height"))+$(this).attr("keeptop"));
-                //if (!$(this).hasClass("sm-text")) resizeRect($(this).attr("pID"),$(this).attr("qID"));
-            }
-        });
-        $("#panels").find(".sm-panel .ui-resizable-e").hide();
-        //nextColumn.find(".sm-panel .ui-resizable-s").css("bottom","7px");
-        $("#panels").find(".sm-panel .ui-resizable-s").hide();
-        $("#panels").find(".sm-panel .ui-resizable-se").css("right","4px");
-        //$("#panels").find(".sm-panel .ui-resizable-se").css("bottom","1px");
-    }
-    else {
-        //$("#panel"+panelID+"-addbtn").hide();
-        //$("#panel"+pID+"-heading").text("New Panel "+pID);
-        $("#overview-area .question-selector").remove();
-        //$("#panel"+panelID+"-addbtn").attr("disabled","disabled");
-        //$("#panel"+panelID+"-addallbtn").attr("disabled","disabled");
-        //$("#overview-area chart-select").hide();
-        $("#overview-area .chart-area").hide();
-    }
-
-    // for (var i=0; i<allSiblings.length; i++){
-    //     // console.log(parseInt($(allSiblings[i]).css("top")));
-    //     // console.log(parseInt($(allSiblings[i]).css("left")));
-    //     // console.log(parseInt($(allSiblings[i]).attr("tempofftop")));
-    //     // console.log(parseInt($(allSiblings[i]).attr("tempoffleft")));
-    //     // console.log($(allSiblings[i]).offset().top);
-    //     // console.log($(allSiblings[i]).offset().left);
-    //     $(allSiblings[i]).css("top",parseInt($(allSiblings[i]).css("top"))+parseInt($(allSiblings[i]).attr("tempofftop"))-$(allSiblings[i]).offset().top);
-    //     $(allSiblings[i]).css("left",parseInt($(allSiblings[i]).css("left"))+parseInt($(allSiblings[i]).attr("tempoffleft"))-$(allSiblings[i]).offset().left);
-    // }
-
-    // if (window.brushSettings[newSurveyIndex] instanceof Object) {
-    //     brushAllCharts(newSurveyIndex,window.brushSettings[newSurveyIndex].qID,window.brushSettings[newSurveyIndex].response,pID);
-    // }
+    // Hide the e (horizontal) resize handle and s (vertical) resize handle (resizing on a single direction is forbidden)
+    $("#panels").find(".sm-panel .ui-resizable-e").hide();
+    $("#panels").find(".sm-panel .ui-resizable-s").hide();
+    // Adjust position of se resize handle
+    $("#panels").find(".sm-panel .ui-resizable-se").css("right","4px");
 }
 
-function updateDefaultChart(pID) {
-    var currentSurveyIndex = $(".surveyselector").val();
-    //var currentOptions = $("#panel"+pID+"-selector").find("option");
-    //var currentOptionValues = new Array();
-    //var qID;
+// Function to add content into all small multiples
+// [Outside functions]      createBarChart(...) :       Defined in barchart.js
+//                          createQueryHistogram(...) : Defined in querybarchart.js
+//                          createFullResponses(...) :  Defined in fullresponses.js
+//                          sortable() :                Defined in open source library jQuery UI
+//                          brushAllCharts(...) :       Defined in brushing.js
+function updateDefaultChart() {
+    // Get survey index and panel ID
+    var currentSurveyIndex = window.sID;
+    var pID = 0;
 
+    // Scan all question ID of the current survey
     for (qID in surveyResponseAnswer[currentSurveyIndex]){
-        //var qID = i+1;
-        //qID = currentOptions[i].value;
+        // For each type of question, there is a corresponding Bootstrap class defined in panelsDOM7.js
+        // Create a new small multiple panel DOM based on the acquired Bootstrap class
         var panel_class = sm_panel_class[surveyDataTable[currentSurveyIndex][1][qID]];
         var nextSmallMultiplePanel = newSmallMultiplePanelDOM(pID,qID,panel_class);
-        // nextSmallMultiplePanel.find(".panel-heading").text(qID+":"+surveyDataTable[currentSurveyIndex][0][qID]);
+
+        // Append the new small multiple panel to chart area in ovreview tab and assign sID as its attribute
+        nextSmallMultiplePanel.appendTo("#overview-area .chart-area");
+        nextSmallMultiplePanel.attr("sID",currentSurveyIndex);
+
+        // Fill in question wording content in heading of the panel, adjust its appearance and add tooltip to the text
         nextSmallMultiplePanel.find(".panel-heading").append($("<div class='text-content'>"+qID+":"+surveyDataTable[currentSurveyIndex][0][qID]+"</div>"));
         nextSmallMultiplePanel.find(".text-content").css("padding","5px 12px 5px 5px");
         nextSmallMultiplePanel.find(".panel-heading").attr("title",qID+":"+surveyDataTable[currentSurveyIndex][0][qID]);
-        //$("#panel"+pID+"-sm"+(i+1)+'-heading').text($(currentOptions[i]).text());
-        nextSmallMultiplePanel.appendTo(".chart-area");
-        nextSmallMultiplePanel.attr("sID",currentSurveyIndex);
 
-
+        // Adjust dimension of small multiple panel
         nextSmallMultiplePanel.css("width",parseInt(nextSmallMultiplePanel.css("width"))-2);
         nextSmallMultiplePanel.find(".chart-container").css("height",default_smcon_height);
         
-        //nextSmallMultiplePanel.css("height",nextSmallMultiplePanel.css("height"));
-        // nextSmallMultiplePanel.find(".ui-resizable-se").css("bottom","1px");
-        // nextSmallMultiplePanel.find(".ui-resizable-se").css("right","5px");
+        // Read question type of each question from survey data table
+        // Assign the current small multiple with corresponding class of chart type
+        // Then call the corresponding function to draw
         if (surveyDataTable[currentSurveyIndex][1][qID] == "Response") {
-            //nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
             nextSmallMultiplePanel.addClass("sm-barchart");
-            //nextSmallMultiplePanel.addClass(sm_panel_bar_class);
             createBarChart(pID,qID,currentSurveyIndex,"Response");
         }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Multiple Responses") {
-            //nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
             nextSmallMultiplePanel.addClass("sm-barchart");
-            //nextSmallMultiplePanel.addClass(sm_panel_bar_class);
             createBarChart(pID,qID,currentSurveyIndex,"Multiple Responses");
         }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Numeric") {
-            //nextSmallMultiplePanel.find(".sm-panel-more").css("visibility","hidden");
-            nextSmallMultiplePanel.addClass("sm-barchart-num");
-            //nextSmallMultiplePanel.addClass(sm_panel_bar_class);
-            //createBarChart(pID,qID,currentSurveyIndex,"Numeric");
-            createQueryHistogram(pID,qID);
+            nextSmallMultiplePanel.addClass("sm-barchart-num");                         
+            createQueryHistogram(pID,qID); 
         }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Open-Ended Response") {
             nextSmallMultiplePanel.addClass("sm-text");
-            //nextSmallMultiplePanel.addClass(sm_panel_text_class);
-            //createWordCloud(pID,qID,currentSurveyIndex);
             createFullResponses(pID,qID,currentSurveyIndex);
         }
         else if (surveyDataTable[currentSurveyIndex][1][qID] == "Ranking Response") {
             nextSmallMultiplePanel.addClass("sm-barchart-rank");
-            //nextSmallMultiplePanel.addClass(sm_panel_bar_class);
             createBarChart(pID,qID,currentSurveyIndex,"Ranking Response");
         }
         else {
-
+            // Reserved for any possible new type
         }
     }
 
-    $(".chart-area").sortable({
-        //placeholder: "ui-state-highlight",
-        containment: 'parent',
+    // Set chart area of overview tab as sortable, i.e., small multiples can be dragged and reordered
+    $("#overview-area .chart-area").sortable({
+        containment: 'parent',      // Must be dragged within their container
         items: '.sm-panel',
-        cancel: 'svg',
+        cancel: 'svg',              // SVG cannot be dragging handle
         forcePlaceholderSize: true
     });
-    //$(".chart-area").disableSelection();
 
+    // If brushing has been performed before, brush all charts to synchronize
     if (window.brushSettings[currentSurveyIndex] instanceof Object) {
         brushAllCharts(currentSurveyIndex,window.brushSettings[currentSurveyIndex].qID,window.brushSettings[currentSurveyIndex].response,$("#overview-area"),window.brushSettings[currentSurveyIndex].clickedbar);
     }
 
 }
 
-function showAllResponses(pID,qID) {
-    var currentSurveyIndex = $("#panel"+pID+"-surveyselector").val();
-    var currentSurveyName = surveyDataIndex[$("#panel"+pID+"-surveyselector").val()];
-    var currentResponseNum = surveyDataTable[currentSurveyIndex].length;
-    var currentQuestionText = $("#panel"+pID+"-sm"+qID+"-heading").text();
-
-    var nextAllResponses = newAllResponsesDOM(currentSurveyIndex,qID);
-    nextAllResponses.find(".panel-heading").text("(All responses for) "+currentSurveyName+" "+currentQuestionText);
-    nextAllResponses.find(".panel-heading").attr("title",$("#panel"+pID+"-sm"+qID+"-heading").text());
-    //nextAllResponses.appendTo("#more-col"+pID);
-    //nextAllResponses.prependTo("#panels");
-    $("#col"+pID).after(nextAllResponses);
-
-    var newText;
-    for (var i=2; i<currentResponseNum;i++){
-        newText = surveyDataTable[currentSurveyIndex][i][qID];
-        if (newText.length > 0){
-            nextAllResponses.find(".resp-text").append("<div class='response' rID="+i+"><p>"+newText+"</p><br></div>");
-            //nextAllResponses.find(".resp-text").append("<br>");
-        }
-        //else console.log(i+": "+newText);
-    }
-
-    // $("#more-col"+pID).sortable({
-    //     items: '.resp-panel',
-    //     cancel: '.resp-text',
-    //     forcePlaceholderSize: true
-    // }).disableSelection();
-    nextAllResponses.attr("keepleft",nextAllResponses.position().left);
-    nextAllResponses.attr("keeptop",nextAllResponses.position().top);
-    nextAllResponses.resizable({
-        resize: function(event, ui) {
-            var heading_height = $(this).find('.panel-heading').css("height");
-            var self_height = $(this).css("height");
-            $(this).find(".resp-text").css("height",parseInt(self_height)-parseInt(heading_height));
-        }
-    });
-
-    var scrollY = nextAllResponses.offset().top;
-    nextAllResponses.hide();
-    $("body,html").animate({scrollTop:scrollY},"normal",function(){
-        //nextAllResponses.animate({width:"toggle",height:"toggle"});
-        nextAllResponses.show("normal");
-    });
-    if (window.brushSettings[currentSurveyIndex] instanceof Object) {
-        brushAllCharts(currentSurveyIndex,window.brushSettings[currentSurveyIndex].qID,window.brushSettings[currentSurveyIndex].response,nextAllResponses);
-    }
-    //nextAllResponses.siblings().animate({position:"relative"});
-    // nextAllResponses.hide();
-    // nextAllResponses.animate({width:"toggle",height:"toggle"});
-    //nextAllResponses.css("overflow","auto").css("resize","both");
-    $("#panels").sortable({
-        items: '.panel-container',
-        cancel: ".no-drag",
-        forcePlaceholderSize: true
-    });
-}
-
-function resizePanelAfterToggle(pID) {
-       
-}
-
+// Function to add tags (tooltips) to options of a selector
+// [Parameter] selector :   (DOM of a certain Bootstrap selector)
 function addOptionTags(selector) {
+    // Get all "span.text" DOMs, which are the text actually being displayed on the drop-down menu
     var allSpans = selector.parent().find("span.text");
+    
+    // Get all the options in the selector
     var allOptions = selector.find("option");
+
+    // Assign each "span.text" DOM with a title, whose content is the same as the title of its counterpart of option
     for (var i=0; i<allOptions.length; i++) {
         $(allSpans[i]).attr("title",$(allOptions[i]).attr("title"));
     }
+
+    // Adjust appearance of drop-down menu text ("span.text" DOMs)
     allSpans.css("width","97%")
     allSpans.css("display","block")
     allSpans.css("white-space","pre-wrap")
@@ -643,66 +361,34 @@ function addOptionTags(selector) {
     allSpans.css("word-break","normal")
 }
 
-function adjustParentSize(panel) {
-    parentElement = panel.parent();
-    parentWidth = parseInt(parentElement.css("width"));
-    parentHeight = parseInt(parentElement.css("height"));
-    parentOffset = parentElement.offset();
-    childrenElement = parentElement.children();
+// Function to hide or show a small multiple panel, depending on the change in a question selector
+// [Outside functions]  containedInArray(element, array)    : defined in general.js
+//                      resizeRect(pID, qID)                : defined in resize.js
+function toggleSMByQuestionChange() {
+    // Get all the options in the question selector
+    var allOptions = $("#panel0-selector").find("option");
 
-    if (childrenElement.length > 0){
-        var maxRight = 0;
-        var maxBottom = 0;
-        for (var i = 0; i < childrenElement.length; i++) {
-            if (parseInt($(childrenElement[i]).css("width"))+$(childrenElement[i]).offset().left > maxRight) {
-                maxRight = parseInt($(childrenElement[i]).css("width"))+$(childrenElement[i]).offset().left;
-            }
-            if (parseInt($(childrenElement[i]).css("height"))+$(childrenElement[i]).offset().top > maxBottom) {
-                maxBottom = parseInt($(childrenElement[i]).css("height"))+$(childrenElement[i]).offset().top;
-            }
-        }
-    
-
-        parentWidth = maxRight - parentOffset.left;
-        parentHeight = maxBottom - parentOffset.top;
-
-        parentElement.css("width",parentWidth);
-        parentElement.css("height",parentHeight);
-    }
-}
-
-function updateChartByQuestionChange(pID) {
-    var allOptions = $("#panel"+pID+"-selector").find("option");
-    var currentPanel;
+    // Scan all SMs to see whether they are visible by using option values
+    var currentPanel;   // Temporary variable of a SM panel
     for (var i=0; i<allOptions.length; i++){
-        currentPanel = $("#panel"+pID+"-sm"+allOptions[i].value);
-        if (containedInArray(allOptions[i].value, $("#panel"+pID+"-selector").val())) {    
-            //currentPanel.show();
+        // Get the SM panel corresponding to the current option value
+        currentPanel = $("#panel0-sm"+allOptions[i].value);
+
+        // If the current option value is "ticked", i.e., is in value array of the question selector,
+        // check whether this SM panel is visible or not, if not, make it visible by "toggling" it
+        // and do resizing on its rect element
+        if (containedInArray(allOptions[i].value, $("#panel0-selector").val())) {
             if (currentPanel.css("display") == "none") {
                 currentPanel.animate({
                     width: 'toggle',
                     height: 'toggle',
                 },"normal",function(){
-                    // if (currentPanel.find(".sm-panel-more").css("visibility") == "hidden") {
-                    //     resizeRect(currentPanel.attr("pID"),currentPanel.attr("qID"));
-                    //     console.log("resized");
-                    // }
-                    // else resizeCloud(currentPanel.attr("pID"),currentPanel.attr("qID"));
-
                     if (!currentPanel.hasClass("sm-text")) resizeRect(currentPanel.attr("pID"),currentPanel.attr("qID"));
                 });
             }
-            //$(currentPanel).prependTo($("#panel"+panelID+"-chart-area"));
-            // if (currentPanel.find(".sm-panel-more").css("visibility") == "hidden") {
-            //     resizeRect(currentPanel.attr("pID"),currentPanel.attr("qID"));
-            //     console.log("resized");
-            // }
-            // else resizeCloud(currentPanel.attr("pID"),currentPanel.attr("qID"));
         }
+        // If the current option value is not "ticked" and the SM panel is visible, make it invisible by "toggling" it
         else {
-            //currentPanel.hide();
-            //currentPanel.attr("oldWidth",currentPanel.css("width"));
-            //currentPanel.attr("oldPadding",currentPanel.css("padding"));
             if (currentPanel.css("display") != "none") {
                 currentPanel.animate({
                     width: 'toggle',
@@ -713,19 +399,40 @@ function updateChartByQuestionChange(pID) {
     }
 }
 
+// Function to create a chart in query tab
+// [Parameters]                            sID  : survey ID, one single integer
+//                                         qID  : question ID, an array of string(s)
+//                                         qcID : query chart ID, one single integer
+// [Outside functions]    createQueryEmpty(qcID)        : defined in empty.js
+//                        createQueryBarchart(qcID)     : defined in querybarchart.js
+//                        createFullResponses(...)      : defined in fullresponse.js
+//                        createQueryHeatmap(qcID)      : defined in queryheatmap.js
+//                        createQueryScatter(...)       : defined in scatter.js
+//                        createQueryCorrelation(qcID)  : defined in correlation.js
+//                        createQueryStacked(qcID)      : defined in stacked.js
 function createQueryChart(sID, qID, qcID) {
-    //console.log(qID);
+    // If qID has no content, create empty chart
     if (qID == null) {
-        createQueryEmpty(qcID);
+        createQueryEmpty(qcID); 
+        // Update chart header
         $("#query-chart"+qcID+" .query-header").text("Selected questions: none");
     }
+    // If qID has only one string
     else if (qID.length == 1) {
+        // If the type of question is NOT open-ended question, create a bar chart designed for query tab
+        // Otherwise create a full response panel
         if (surveyDataTable[sID][1][qID[0]] != "Open-Ended Response") createQueryBarchart(qcID);
         else createFullResponses(qcID,qID[0],sID,"query");
+
+        // Update chart header
         $("#query-chart"+qcID+" .query-header").text("Selected question: "+qID[0]+" "+surveyDataTable[sID][0][qID[0]]);
         $("#query-chart"+qcID+" .query-header").attr("title","Selected question: "+qID[0]+" "+surveyDataTable[sID][0][qID[0]]);
     }
+    // If qID has two strings
     else if (qID.length == 2) {
+        // If both questions are response questions or multi-response questions, create a heat map
+        // If both questions are numeric questions, create a scatter plot
+        // Otherwise create an empty chart
         if (containedInArray(surveyDataTable[sID][1][qID[0]],["Response","Multiple Responses"]) &
             containedInArray(surveyDataTable[sID][1][qID[1]],["Response","Multiple Responses"])) {
             createQueryHeatmap(qcID);
@@ -734,14 +441,18 @@ function createQueryChart(sID, qID, qcID) {
             createQueryScatter(qcID);
         }
         else createQueryEmpty(qcID);
+        // Update chart header (using getQueryHeaderText() which is defined at the end of this function)
         $("#query-chart"+qcID+" .query-header").text(getQueryHeaderText(qID));
         $("#query-chart"+qcID+" .query-header").attr("title",getQueryHeaderText(qID));
     }
+    // If qID has three or more strings
     else {
+        // If the first question is a numeric question, test whether all questions are numeric questions,
+        // if yes, create a correlation matrix, otherwise create an empty chart
         if (surveyDataTable[sID][1][qID[0]] == "Numeric")
         {
             var allNumeric = true;
-            for (var i=0; i<qID.length-1; i++) {
+            for (var i=0; i<qID.length; i++) {
                 if ((surveyDataTable[sID][1][qID[i]]) != "Numeric") {
                     allNumeric = false;
                     break;
@@ -750,6 +461,8 @@ function createQueryChart(sID, qID, qcID) {
             if (allNumeric == true) createQueryCorrelation(qcID);
             else createQueryEmpty(qcID);
         }
+        // If the first question is not a numeric question, check whether all the questions have an identical set of responses,
+        // if yes, create a stacked bar chart, otherwise create an empty chart
         else {
             var sameResp = true;
             for (var i=0; i<qID.length-1; i++) {
@@ -757,23 +470,27 @@ function createQueryChart(sID, qID, qcID) {
                     sameResp = false;
                     break;
                 }
+                // Please note here ranking question could not be presented in a stacked bar chart
                 if (surveyResponseAnswer[sID][qID[i]] == "Ranking Response") {
                     sameResp = false;
                     break;
                 }
             }
-
             if (sameResp == true) createQueryStacked(qcID);
             else createQueryEmpty(qcID);
         }
+        // Update chart header (using getQueryHeaderText() which is defined at the end of this function)
         $("#query-chart"+qcID+" .query-header").text(getQueryHeaderText(qID));
         $("#query-chart"+qcID+" .query-header").attr("title",getQueryHeaderText(qID));
     }
 
+    // If brushing has been perform before (window.brushSettings exists as an object),
+    // perform this brushing again to synchronize the new chart
     if (window.brushSettings[sID] instanceof Object) {
         brushAllCharts(sID,window.brushSettings[sID].qID,window.brushSettings[sID].response,$("#query-area"),window.brushSettings[sID].clickedbar,window.brushSettings[sID].resptype);
     }
 
+    // Function used to get header text from two or more question IDs
     function getQueryHeaderText(qID) {
         var headerText = "Selected questions:";
         for (var i=0; i<qID.length; i++) {

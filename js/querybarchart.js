@@ -144,8 +144,10 @@ function drawQueryHistogram(qcID, qID) {
 		histRectData[i] = new Object();
 		histRectData[i]["value"] = histogramData[i];
 		if (i == 0) histRectData[i]["min"] = xMin;
-		else histRectData[i]["min"] = Math.round(currentResponses[i-1]);
-		histRectData[i]["max"] = Math.round(currentResponses[i]);
+		// else histRectData[i]["min"] = Math.round(currentResponses[i-1]);
+		else histRectData[i]["min"] = parseFloat(currentResponses[i-1]);
+		//histRectData[i]["max"] = Math.round(currentResponses[i]);
+		histRectData[i]["max"] = parseFloat(currentResponses[i]);
 	}
 
 	var xaxisMax = xMax + (xMax - xMin) * 0.1;
@@ -203,10 +205,10 @@ function drawQueryHistogram(qcID, qID) {
 	.attr("stroke","black")
 	.attr("stroke-width",1)
 	.attr("onclick",function(d){
-		return 'brushAllCharts('+sID+',"'+qID+'",{"lobound":'+this.getAttribute("lobound")+',"upbound":'+this.getAttribute("upbound")+'},0,this);';
+		return 'brushAllCharts('+sID+',["'+qID+'"],{"lobound":'+this.getAttribute("lobound")+',"upbound":'+this.getAttribute("upbound")+'},0,this,"histogram");';
 	})
 	.append("title").text(function(d) {
-		return (d.min + " to " + d.max + ": "+ d.value + " response(s)");
+		return (">"+d.min + " and <=" + d.max + ": "+ d.value + " response(s)");
 	});
 
 	d3.select(currentHistChart[0]).selectAll(".brushedHistRect")
@@ -235,6 +237,7 @@ function drawQueryHistogram(qcID, qID) {
 	.attr("fill", "#337CB7")
 	.attr("stroke","black")
 	.attr("stroke-width",1)
+	.attr("onclick","clearBrushing(window.sID);")
 	//.attr("onclick","clearBrushing("+sID+");")
 	.append("title");
 

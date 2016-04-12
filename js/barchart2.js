@@ -156,10 +156,10 @@ function createBarChart(pID, qID, sID, RespType, ChartType) {
 		//.attr("onclick",'brushAllCharts('+sID+',"'+qID+'","'+currentResponseList[i]+'")')
 		.attr("onclick",function(d){
 			if (RespType == "Numeric") {
-				return 'brushAllCharts('+sID+',"'+qID+'",{"lobound":'+this.getAttribute("lobound")+',"upbound":'+this.getAttribute("upbound")+'},0,this);';
+				return 'brushAllCharts('+sID+',["'+qID+'"],{"lobound":'+this.getAttribute("lobound")+',"upbound":'+this.getAttribute("upbound")+'},0,this);';
 			}
-			else if (RespType != "Ranking Response") return 'brushAllCharts('+sID+',"'+qID+'","'+currentResponseList[i]+'",0,this);';
-			else return 'brushAllCharts('+sID+',"'+qID+'","'+currentResponseList[i]+'",0,this,"ranking");';
+			else if (RespType != "Ranking Response") return 'brushAllCharts('+sID+',["'+qID+'"],"'+currentResponseList[i]+'",0,this);';
+			else return 'brushAllCharts('+sID+',["'+qID+'"],"'+currentResponseList[i]+'",0,this,"ranking");';
 		})
 		.append("title").text(function(d){
 			if (RespType == "Ranking Response") {
@@ -429,7 +429,6 @@ function resizeRect(pID, qID, ChartType) {
 					}
 					//else return 0;
 					else {
-						console.log(d)
 						return parseInt($(this).parent().css("width"))*d/maxValue*bar_svg_width_ratio;
 					}
 				}
@@ -678,7 +677,7 @@ function syncBarOrder(pID, qID, sID, daID, oldIndex, newIndex, datavalue){
 }
 
 function cutText(textContent, threshold) {
-	return textContent.length < threshold ? textContent : textContent.substring(0,threshold-1)+"...";
+	return textContent.length < threshold ? textContent : textContent.substring(0,threshold-2)+"...";
 }
 
 function updateDistinctAnswer(daID, oldIndex, newIndex, maxIndex) {

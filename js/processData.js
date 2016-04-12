@@ -25,6 +25,7 @@ function getResponseAnswer(json) {
 						answerCount = json[i][q].length;
 					}
 					else {
+						if (json[i][q]=="" | json[i][q]==null) continue;
 						responseAnswerList[q][0] = json[i][q];
 						answerCount = 1;
 					}
@@ -35,7 +36,7 @@ function getResponseAnswer(json) {
 							newAnswer = true;
 							answerCount = responseAnswerList[q].length;
 							for (var j = 0; j < answerCount; j++){
-								if (json[i][q][r] == responseAnswerList[q][j] | json[i][q][r]=="" | json[i][q]==null){
+								if (json[i][q][r] == responseAnswerList[q][j] | json[i][q][r]=="" | json[i][q][r]==null){
 									newAnswer = false;
 									break;
 								}
@@ -84,7 +85,7 @@ function getResponseAnswer(json) {
 			var fullArray = new Array();
 			for (var i=2; i < json.length; i++) {
 				//fullArray[i-2] = json[i][q];
-				if (json[i][q] != null) fullArray[fullArray.length] = json[i][q];
+				if (json[i][q] != null | json[i][q] != undefined) fullArray[fullArray.length] = json[i][q];
 			}
 			var maxInArray = Math.max.apply(null,fullArray);
 			var minInArray = Math.min.apply(null,fullArray);

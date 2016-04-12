@@ -55,7 +55,7 @@ function newTabDOM(pID) {
     DOMstring += 'border-width:1px; border-style:solid; border-color:#ddd;padding-top:7px;padding-bottom:5px"></div></div>';
     DOMstring += '<div id="query-area" class="tab-pane fade '+overview_query_class+'" style="padding:0; border-width:1px;';
     DOMstring += 'border-top-style:solid; border-right-style:solid; border-left-style:solid; border-width:1px; border-color:#ddd">';
-    DOMstring += '<div class="'+overview_query_class+' page-header" style="text-align:center;margin-top:5px;margin-bottom:1px"></div></div>';
+    DOMstring += '<div class="'+overview_query_class+' no-drag page-header" style="text-align:center;margin-top:5px;margin-bottom:1px"></div></div>';
 
     DOMstring += '</div></ul>';
 
@@ -97,10 +97,10 @@ function newSurveyAreaDOM(ID) {
     DOMstring += ' style="padding:10px 5px 5px 5px; border-top-style:solid; border-right-style:solid; border-left-style:solid; border-width:1px; border-color:#ddd">';
 
     // Add survey selector
-    DOMstring += '<div class="col-lg-12 col-sm-12 col-xs-12" style="padding-left:20px">';
+    DOMstring += '<div class="col-lg-12 col-sm-12 col-xs-12 vcenter" style="padding-left:5px">';
     DOMstring += '<select id="panel'+ID+'-surveyselector"';
     DOMstring += 'class="selectpicker surveyselector vcenter" data-max-options="1" data-live-search="true" ';
-    DOMstring += 'data-live-search-placeholder="Search" title="Choose a survey" data-width="91%" data-container="body">';
+    DOMstring += 'data-live-search-placeholder="Search" title="Choose a survey" data-width="85%" data-container="body">';
 
     // Add in available survey entries
     var resp_num;
@@ -152,12 +152,12 @@ function newQuestionSelectorDOM(pID) {
 	// Add sub heading
     //var DOMstring = '<div class="col-lg-12 vcenter">Choose a question</div>';
 
-	var DOMstring = '<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding-left:20px; padding-top:5px; padding-bottom:5px"><select id="panel'+pID+'-selector"';
+	var DOMstring = '<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vcenter" style="padding-left:5px; padding-top:5px; padding-bottom:5px"><select id="panel'+pID+'-selector"';
 
     DOMstring += ' pID='+pID;
 
 	DOMstring += ' class="selectpicker question-selector" multiple data-live-search="true" data-selected-text-format="count"';
-    DOMstring += ' data-live-search-placeholder="Search" title="Choose a question" data-width="91%" data-container="body">';
+    DOMstring += ' data-live-search-placeholder="Search" title="Choose a question" data-width="85%" data-container="body">';
 
 	// Add in available survey entries
     //var surveyIndex = $("#panel"+pID+"-surveyselector").val();
@@ -172,7 +172,7 @@ function newQuestionSelectorDOM(pID) {
         for (q in questionList) {
             //var questionText = questionList[q].length > 80 ? questionList[q].substring(0,80)+"..." : questionList[q];
             var questionText = questionList[q];
-            DOMstring += '<option id = "panel'+pID+'-selector-'+q+'" value = '+q+' title="'+questionList[q]+'">'+q+':'+questionText+'</option>';
+            DOMstring += '<option id = "panel'+pID+'-selector-'+q+'" value = '+q+' title="'+q+':'+questionList[q]+'">'+q+':'+questionText+'</option>';
         }
     }
     
@@ -183,6 +183,9 @@ function newQuestionSelectorDOM(pID) {
     //DOMstring += '<button class="btn btn-primary btn-xs rmv-all" style="margin-left:10px; width:8%;font-size:11px"><span class="glyphicon glyphicon-minus-sign"></span>&nbspAll</button>';
     //DOMstring += '<div id="dvDiv'+pID+'" style="display:none;position:absolute;padding:1px;border:1px solid #333333;;background-color:#fffedf;font-size:smaller;z-index:999;"></div>';
     //DOMstring+= '<iframe id="frm'+pID+'" style="display:none;position:absolute;z-index:998"></iframe>';
+
+    DOMstring += '<span class="btn btn-sm another-btn" qcID='+pID+' style="display:none;margin-left:5px">';
+    DOMstring += '<span class="glyphicon glyphicon-chevron-right"></span></span>';
     DOMstring += '</div>';
 
 	return $(DOMstring);

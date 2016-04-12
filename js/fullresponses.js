@@ -19,6 +19,7 @@ function createFullResponses(pID, qID, sID, ChartType) {
 
 	for (var i=2; i<currentResponseNum;i++){
         newText = surveyDataTable[sID][i][qID];
+        //if (newText == undefined) continue;
         if (newText.length > 0){
             currentContainer.append("<div class='response-pri' rID="+i+"><p>"+newText+"</p><br></div>");
         }
