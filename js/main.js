@@ -52,16 +52,16 @@ d3.json("../data/SurveyData.json",function(error,json){
         surveyDataIndex = json[0];
         for (i=1;i<json.length;i++) {
             surveyDataTable[i-1] = json[i];
-            surveyResponseAnswer[i-1] = getResponseAnswer(json[i]);
-            surveyDistinctAnswer[i-1] = getDistinctAnswer(surveyResponseAnswer[i-1]);
+            surveyResponseAnswer[i-1] = processData.getResponseAnswer(json[i]);
+            surveyDistinctAnswer[i-1] = processData.getDistinctAnswer(surveyResponseAnswer[i-1]);
         }
-        syncResponseWithDA();
+        processData.syncResponseWithDA();
     }
     //console.log(surveyDataIndex);
     //console.log(surveyDataTable);
     //console.log(surveyResponseAnswer);
-    initializeInterface();
+    panels.initializeInterface();
     //addNewPanel();
-    addNewQueryChart();
+    panels.addNewQueryChart();
 });
 

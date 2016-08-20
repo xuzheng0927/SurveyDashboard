@@ -226,7 +226,7 @@
     noneSelectedText: 'Nothing selected',
     noneResultsText: 'No results matched {0}',
     countSelectedText: function (numSelected, numTotal) {
-      return (numSelected == 1) ? "{0} item selected" : "{0} items selected";
+      return (numSelected == 1) ? "{0} question selected" : "{0} questions selected";
     },
     maxOptionsText: function (numAll, numGroup) {
       return [

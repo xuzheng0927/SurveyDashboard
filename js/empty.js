@@ -1,6 +1,6 @@
 function createQueryEmpty(qcID){
 	$("#query-chart"+qcID+" .panel .chart-container").remove();
-	$("#query-chart"+qcID+" .panel").append($('<div class="chart-container '+full_width_class+'" style="margin:20px;" qID1='+qID[0]+' qID2='+qID[1]+'></div>'));
+	$("#query-chart"+qcID+" .panel").append($('<div class="chart-container '+panelsDOM.getDOMConstants().full_width_class+'" qID1='+qID[0]+' qID2='+qID[1]+'></div>'));
 
 	$("#query-chart"+qcID).find(".chart-container").append($("<svg style='width:100%;height:40px'></svg>"));
 	//$("#query-chart"+qcID).find("svg").append($("<text font-size=20>No available chart</text>"));

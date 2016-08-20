@@ -1,0 +1,12 @@
+.query-heatmap-cell {
+	float: left;
+}
+
+.panel-heading {
+	display: block;      
+ position: absolute;       
+right: -5px;       
+top: 15px;       
+-webkit-transform: rotate(-90deg);      
+ -moz-transform: rotate(-90deg);
+}
